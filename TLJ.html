@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+
+<html>
+    <title>The lost job</title>
+    <body></body>
+    <script>
+        //NECESSARY FUNCTiONS
+
+console.lgo = () => {
+    console.log("XD you spelled it wrong!");
+};
+
+console.glo = () => {
+    console.log("XD you spelled it wrong!");
+};
+console.gol = () => {
+    console.log("XD you spelled it wrong!");
+};
+
+console.null = () => {
+
+     for(;;) {
+        let randomize = Math.floor(Math.random() * 4) + 1; // Generates 1 to 4
+        switch(randomize) {
+            case 1:
+                console.log('CP VIOLATION.'. repeat("CP VIOLATION".length * 500));
+                break;
+            case 2:
+                console.log('Individual, you are charged with capital malcompliance. Anti-citizen status approved.'.repeat("Individual, you are charged with capital malcompliance. Anti-citizen status approved.".length * 500));
+                break;
+            case 3:
+                console.log("YOU NOW EAT  B R E A D".repeat("YOU  NOW EAT B R E A D". length * 500));
+                break;
+            case 4:
+                console.log('1101111000011010100011010101111010100010101101011010100010111111000110101100101011010010100110011010101010101010100101011011110100000101101110111011101010110010101101011011011101000101010101011010110 + CODE 6 * 4 - X = 3. x =  . . . - S O L V E ');
+                break;
+        }
+    }
+}
+
+function loadImg(path) { 
+let img = new Image();
+img.src = path;
+return img;
+};
+
+function playS(path) {
+    let s = new Audio();
+    s.src = path;
+    s.play();
+};
+
+    function drawRotated(what) {
+    ctx.save();
+    ctx.translate(what.x + what.sx / 2, what.y + what.sy / 2);
+    let rotationRadians3 = what.rotation * Math.PI / 180;
+    ctx.rotate(rotationRadians3);
+      ctx.drawImage(what.img, -what.sx / 2, -what.sy / 2, what.sx, what.sy);
+    ctx.restore();
+};
+
+function calcDist(a, b) {
+    let dx = a.x - b.x;
+    let dy = a.y - b.y;
+    return Math.sqrt(dx * dx + dy * dy);
+};
+
+function collide(what, what1, isPush) {
+    if(what.z === what1.z) {
+   let collide = what.x <= what1.x + what1.sx &&
+        what.x + what.sx >= what1.x &&
+        what.y <= what1.y + what1.sy &&
+        what.sy + what.y >= what1.y;
+
+        if(!what.speed) {
+            what.speed = 2;
+        };
+           if(collide && isPush === true) {
+            if(what.x < what1.x) {
+                what.x -= blockSize;
+            };
+            if(what.x > what1.x + what1.sx) {
+                what.x += blockSize;
+            };
+            if(what.y < what1.y) {
+                what.y -= blockSize;
+            };
+            if(what.y > what1.y) {
+                what.y += blockSize;
+            };
+        };
+
+        if(isPush === false && collide) {
+ if(what.x < what1.x) {
+                what.x -= what.speed * 2;
+            };
+            if(what.x > what1.x + what1.sx) {
+                what.x += what.speed * 2;
+            };
+            if(what.y < what1.y) {
+                what.y -= what.speed * 2;
+            };
+            if(what.y > what1.y) {
+                what.y += what.speed * 2;
+            };
+        };
+    };
+};
+
+function slimeBehav(what, what1, isPush) {
+    if(what.z === what1.z) {
+   let collide = what.x <= what1.x + what1.sx &&
+        what.x + what.sx >= what1.x &&
+        what.y <= what1.y + what1.sy &&
+        what.sy + what.y >= what1.y;
+
+        if(!what.speed) {
+            what.speed = 2;
+        };
+           if(collide && isPush === true) {
+            if(what.x < what1.x) {
+                what.x -= blockSize /2;
+            };
+            if(what.x > what1.x + what1.sx) {
+                what.x += blockSize/2;
+            };
+            if(what.y < what1.y) {
+                what.y -= blockSize /2;
+            };
+            if(what.y > what1.y) {
+                what.y += blockSize/2;
+            };
+        };
+
+        if(isPush === false && collide) {
+ if(what.x < what1.x) {
+                what.x -= what.speed /2 /2;
+            };
+            if(what.x > what1.x + what1.sx) {
+                what.x += what.speed /2 /2;
+            };
+            if(what.y < what1.y) {
+                what.y -= what.speed /2 /2;
+            };
+            if(what.y > what1.y) {
+                what.y += what.speed /2/2;
+            };
+        };
+    };
+};
+
+//ENGINE CRITICAL VARIABLES
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+document.body.appendChild(canvas);
+let w = canvas.width;
+let h = canvas.height;
+let stuff = [];
+let keys = [];
+let cpk = null;
+let text = [];
+
+let player = {x:100,y:100,sx:60,sy:75,speed: 5, img:loadImg("./Dan-Doe.png"), visible: true, ff() {
+    if(this.visible === true) {
+    if(cpk === "w" || cpk === "W") this.y -= this.speed;
+    if(cpk === "a" || cpk === "A") this.x -= this.speed;
+    if(cpk === "s" || cpk === "S") this.y += this.speed;
+    if(cpk === "d" || cpk === "D") this.x += this.speed;
+
+    ctx.drawImage(this.img,this.x,this.y,this.sx,this.sy);
+    };
+}};
+let oiv = 0;
+let tiv = 0;
+let frames1 = 0;
+let mbd = null;
+
+//EVENT LISTENERS
+window.addEventListener("keydown", e => {
+    cpk = e.key;
+    keys[e.key] = true;
+
+for(let i = 0; i < stuff.length; i++) {
+    let s = stuff[i];
+
+    if(typeof s.rk === "string" && typeof s.kf === "function") {
+        if(e.key === s.rk) {
+            s.kf();
+        };
+    };
+};
+});
+
+window.addEventListener("keyup", e => {
+    cpk = null;
+    keys[e.key] = false;
+
+    for(let i = 0; i < stuff.length; i++) {
+    let s = stuff[i];
+
+    if(typeof s.rrk === "string" && typeof s.rkr === "function") {
+        if(e.key === s.rrk) {
+            s.rkr();
+        };
+    };
+};
+});
+
+window.addEventListener("mousedown", e => {
+mbd = e.button;
+for(let i = 0; i < stuff.length; i ++) {
+    let o = stuff[i];
+
+if(typeof o.onMD === "function") {
+    o.onMD();
+};
+
+if(typeof o.onClick === "function") {
+let intersect = e.clientX >= o.x &&
+            e.clientX <= o.x + o.sx &&
+            e.clientY >= o.y &&
+            e.clientY <= o.y + o.sy;
+
+if(intersect) {
+    o.onClick();
+
+if(typeof o.breaks === "boolean" && typeof o.seed === "number" && typeof o.bc === "string" && typeof o.peices === "number" &&  typeof o.breakcd === "number") {
+if(o.breakcd > 0) {
+    o.breakcd --;
+} else {
+    if(typeof o.collides === "boolean") {
+        o.collides = false;
+    };
+o.visible = false;
+
+let x = o.x;
+let y = o.y;
+let p = o.peices;
+let bco = o.bc;
+let pe = o.peices;
+let s = o.seed;
+
+for(let i = 0; i < pe; i++) {
+    stuff.push({
+        x:x,
+        y:y,
+        visible: true,
+        sbh: true,
+        c: bco, 
+        dir: 1 + Math.floor(Math.random() * 8),
+        sx:s+Math.floor(Math.random() * 10),
+        sy:s+Math.floor(Math.random() * 10),
+        forHowLong: 20 + Math.floor(Math.random() * 40),
+        howLongCount: 0,
+        ff() {
+            this.howLongCount ++;
+            if(this.howLongCount < this.forHowLong) {
+                if(this.dir === 1) this.x += 1;
+                if(this.dir === 2) this.x -= 1;
+                if(this.dir === 3) this.y += 1;
+                if(this.dir === 4) this.y -= 1;
+                if(this.dir === 5) this.y ++; this.x --;
+                if(this.dir === 6) this.y --; this.x ++;
+                if(this.dir === 7) this.y --; this.x --;
+                if(this.dir === 8) this.y ++; this.x ++;
+            };
+        }
+    });
+};
+};
+};
+};
+};
+};
+});
+
+
+window.addEventListener("mouseup", e => {
+mbd = null;
+for(let i = 0; i < stuff.length; i ++) {
+    let o = stuff[i];
+
+if(typeof o.onMU === "function") {
+    o.onMU();
+};
+
+if(typeof o.onCMU === "function") {
+let intersect = e.clientX >= o.x &&
+            e.clientX <= o.x + o.sx &&
+            e.clientY >= o.y &&
+            e.clientY <= o.y + o.sy;
+
+if(intersect) {
+    o.onCMU();
+};
+};
+};
+});
+
+window.addEventListener("mousemove", e => {
+for(let i = 0; i < stuff.length; i ++) {
+    let o = stuff[i];
+
+
+if(typeof o.mouseOn === "boolean") {
+let intersect = e.clientX >= o.x &&
+            e.clientX <= o.x + o.sx &&
+            e.clientY >= o.y &&
+            e.clientY <= o.y + o.sy;
+
+if(intersect) {
+    o.mouseOn = true;
+} else {
+    o.mouseOn = false;
+};
+};
+};
+});
+
+//MAIN RENDER LOOP
+function loop() {
+ctx.clearRect(0,0,w,h);
+
+//STUFF FOREACH LOOP
+for(let i = 0; i < stuff.length; i++) {
+if(typeof stuff[oiv] === "object") {
+if(typeof stuff[oiv].ff === "function") {
+stuff[oiv].ff();
+};
+if(stuff[oiv].visible) {
+    stuff[oiv].distance = calcDist(stuff[oiv], player);
+if(typeof stuff[oiv].collides === "boolean") {
+collide(player,stuff[oiv], false);
+};
+if(typeof stuff[oiv].sbh === "boolean") {
+slimeBehav(player,stuff[oiv], false);
+};
+if(typeof stuff[oiv].mouseOn === "boolean" && typeof stuff[oiv].onMO === "function") {
+    if(stuff[oiv].mouseOn === true) {
+        stuff[oiv].onMO();
+    };
+};
+
+if(typeof stuff[oiv].img === "undefined") {
+    ctx.fillStyle = stuff[oiv].c;
+    ctx.fillRect(stuff[oiv].x, stuff[oiv].y, stuff[oiv].sx, stuff[oiv].sy);
+} else {
+    if(typeof o.rotation === "undefined") {
+        ctx.drawImage(stuff[oiv].img, stuff[oiv].x, stuff[oiv].y, stuff[oiv].sx, stuff[oiv].sy);
+    } else {
+        drawRotated(stuff[oiv]);
+    };
+};
+};
+};
+if(oiv < stuff.length) {
+    oiv ++;
+} else {
+    oiv = 0;
+};
+};
+//TEXT FOREACH LOOP
+for(let i = 0; i < text.length; i++) {
+let t = text[tiv];
+
+if(typeof t === "object") {
+    if(typeof t.ff === "function") {
+        t.ff();
+    };
+    if(t.visible) {
+        ctx.fillStyle = t.c;
+        ctx.font = t.f;
+        if(t.t !== "centeredx" && t.t !== "centeredy" || t.t !== "allcentered") {
+            ctx.fillText(t.txt, t.x,t.y);
+        };
+        if(t.t === "centeredx") {
+            ctx.fillText(t.txt, (w - ctx.measureText(t.txt).width) / 2, t.y);
+        };
+        if(t.t === "centeredy") {
+            ctx.fillText(t.txt, t.x, (h - ctx.measureText(t.txt).height) / 2);
+        };
+        if(t.t === "allcentered") {
+            ctx.fillText(t.txt, (w - ctx.measureText(t.txt).width) / 2, (h - ctx.measureText(t.txt).height) /2);
+        };
+    };
+};
+
+if(tiv < text.length) {
+    tiv ++;
+} else {
+    tiv = 0;
+};
+};
+
+frames1 ++;
+console.log(stuff);
+
+    player.ff();
+
+
+
+    requestAnimationFrame(loop);
+};
+
+loop();
+
+    </script>
+</html>
