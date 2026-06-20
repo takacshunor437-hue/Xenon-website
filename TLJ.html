@@ -149,6 +149,109 @@ function slimeBehav(what, what1, isPush) {
     };
 };
 
+function piss() {
+    piss1.push({
+x: player.x + player.sx * 1.5,
+y: player.y + (player.sy / 2),
+sx: 0,
+sy: 0,
+ff() {
+  if(player.bladder > 0) {
+    player.causingTrouble = true;
+            player.bladder --;
+            player.canMove = false;
+this.sx ++;
+this.sy ++;
+        } else {
+            player.causingTrouble = false;
+            player.canMove = true;
+        };
+}
+
+    });
+};
+
+function worker(x,y, index, standing, workspace_xpos, workspace_ypos) {
+    stuff.push({
+    x:x,
+    y:y,
+    sx: 0,
+    sy: 0,
+    i: index,
+    type: "npc",
+    c: null,
+    wx: workspace_xpos,
+    wy: workspace_ypos,
+    stand: standing,
+    visible: true,
+    dir: 0,
+    stateCount: 0,
+    dirCount: 0,
+    goingBack: false,
+    onSit: "rgba(255,0,0,1)",
+    onStand: "rgba(0,0,255,1)",
+    speed: 5,
+    ff() {
+        if(this.x < 0) this.dir = 1;
+        if(this.x >= w - this.sx) this.dir = 2;
+        if(this.y < 0) this.dir = 3;
+        if(this.y >= h - this.sy) this.dir = 4;
+        if(this.dirCount < 100) {
+            this.dirCount ++;
+        } else {
+            this.dirCount = 0;
+            this.dir = 1 + Math.floor(Math.random() * 4);
+        };
+        if(this.stand === true) {
+            this.c = this.onStand;
+               this.sx = 64;
+            this.sy = 128;
+            
+            this.stateCount ++;
+            if(this.stateCount > 1000) {
+                
+                if(this.x !== this.wx || this.wy !== this.y) {
+                if(this.x > this.wx) this.x -= this.speed;
+                if(this.x < this.wx) this.x += this.speed;
+                if(this.y > this.wy) this.y -= this.speed;
+                if(this.y < this.wy) this.y += this.speed;
+                this.goingBack = true;
+                if(player.causingTrouble) {
+                    player.failed = true;
+                }
+                } else {
+                    this.stand = false;
+                    this.stateCount = 0;
+                    this.goingBack = false;
+                      this.c = this.onSit;
+            this.sx = 64;
+            this.sy = 64;
+                };
+            } else {
+                if(this.goingBack === false) {
+                if(this.dir === 1) this.x += this.speed;
+            if(this.dir === 2) this.x -= this.speed;
+            if(this.dir === 3) this.y += this.speed;
+            if(this.dir === 4) this.y -= this.speed;
+             if(player.causingTrouble) {
+                    player.failed = true;
+                }
+                };
+            };
+        } else {
+            this.c = this.onSit;
+            this.sx = 64;
+            this.sy = 64;
+            this.stateCount ++;
+            if(this.stateCount > 1000) {
+                this.stateCount = 0;
+                this.stand = true;
+            }; 
+        };
+    }
+    });
+};
+
 //ENGINE CRITICAL VARIABLES
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
@@ -157,21 +260,27 @@ canvas.height = window.innerHeight;
 document.body.appendChild(canvas);
 let w = canvas.width;
 let h = canvas.height;
-let stuff = [];
+let stuff = [
+    {x: 100, y: 100, sx: 200, sy: 50, collides: true, c: "black", mouseOn: false, onMO() {console.log("mouse on.")}, onClick() {console.log("clicked")}, 
+rk: 'r', kf() {console.log("R pressed.")}, onMD() {console.log("MOUSE DOWN.")}, visible: true
+}
+];
 let keys = [];
 let cpk = null;
 let text = [];
+let piss1 = [];
 
-let player = {x:100,y:100,sx:60,sy:75,speed: 5, img:loadImg("./Dan-Doe.png"), visible: true, ff() {
+let player = {x:100,y:100,sx:60,sy:75,speed: 5, img:loadImg("./Dan-Doe.png"), canMove: true, visible: true, ff() {
     if(this.visible === true) {
+        if(this.canMove === true) {
     if(cpk === "w" || cpk === "W") this.y -= this.speed;
     if(cpk === "a" || cpk === "A") this.x -= this.speed;
     if(cpk === "s" || cpk === "S") this.y += this.speed;
     if(cpk === "d" || cpk === "D") this.x += this.speed;
-
+        };
     ctx.drawImage(this.img,this.x,this.y,this.sx,this.sy);
     };
-}};
+}, causingTrouble: false, failed: false, bladder: 10000,};
 let oiv = 0;
 let tiv = 0;
 let frames1 = 0;
@@ -181,6 +290,12 @@ let mbd = null;
 window.addEventListener("keydown", e => {
     cpk = e.key;
     keys[e.key] = true;
+    if(e.key === "p" || e.key === "P") {
+        if(player.bladder > 60) {
+            console.log("HAPPENS.");
+        piss();
+        };
+    };
 
 for(let i = 0; i < stuff.length; i++) {
     let s = stuff[i];
@@ -319,51 +434,49 @@ if(intersect) {
 };
 });
 
+worker(5,5,1,false,5,5);
+
 //MAIN RENDER LOOP
 function loop() {
 ctx.clearRect(0,0,w,h);
 
 //STUFF FOREACH LOOP
 for(let i = 0; i < stuff.length; i++) {
-if(typeof stuff[oiv] === "object") {
-if(typeof stuff[oiv].ff === "function") {
-stuff[oiv].ff();
+if(typeof stuff[i] === "object") {
+if(typeof stuff[i].ff === "function") {
+stuff[i].ff();
 };
-if(stuff[oiv].visible) {
-    stuff[oiv].distance = calcDist(stuff[oiv], player);
-if(typeof stuff[oiv].collides === "boolean") {
-collide(player,stuff[oiv], false);
+if(stuff[i].visible) {
+    stuff[i].distance = calcDist(stuff[i], player);
+if(typeof stuff[i].collides === "boolean") {
+collide(player,stuff[i], false);
 };
-if(typeof stuff[oiv].sbh === "boolean") {
-slimeBehav(player,stuff[oiv], false);
+if(typeof stuff[i].sbh === "boolean") {
+slimeBehav(player,stuff[i], false);
 };
-if(typeof stuff[oiv].mouseOn === "boolean" && typeof stuff[oiv].onMO === "function") {
-    if(stuff[oiv].mouseOn === true) {
-        stuff[oiv].onMO();
+if(typeof stuff[i].mouseOn === "boolean" && typeof stuff[i].onMO === "function") {
+    if(stuff[i].mouseOn === true) {
+        stuff[i].onMO();
     };
 };
 
-if(typeof stuff[oiv].img === "undefined") {
-    ctx.fillStyle = stuff[oiv].c;
-    ctx.fillRect(stuff[oiv].x, stuff[oiv].y, stuff[oiv].sx, stuff[oiv].sy);
+if(typeof stuff[i].img === "undefined") {
+    ctx.fillStyle = stuff[i].c;
+    ctx.fillRect(stuff[i].x, stuff[i].y, stuff[i].sx, stuff[i].sy);
 } else {
-    if(typeof o.rotation === "undefined") {
-        ctx.drawImage(stuff[oiv].img, stuff[oiv].x, stuff[oiv].y, stuff[oiv].sx, stuff[oiv].sy);
+    if(typeof stuff[i].rotation === "undefined") {
+        ctx.drawImage(stuff[i].img, stuff[i].x, stuff[i].y, stuff[i].sx, stuff[i].sy);
     } else {
-        drawRotated(stuff[oiv]);
+        drawRotated(stuff[i]);
     };
 };
 };
 };
-if(oiv < stuff.length) {
-    oiv ++;
-} else {
-    oiv = 0;
-};
+
 };
 //TEXT FOREACH LOOP
 for(let i = 0; i < text.length; i++) {
-let t = text[tiv];
+let t = text[i];
 
 if(typeof t === "object") {
     if(typeof t.ff === "function") {
@@ -394,8 +507,16 @@ if(tiv < text.length) {
 };
 };
 
+for(let i = 0; i < piss1.length; i++) {
+    let p = piss1[i];
+
+    ctx.fillStyle = "yellow";
+    ctx.fillRect(p.x,p.y,p.sx,p.sy);
+    p.ff();
+};
+
 frames1 ++;
-console.log(stuff);
+console.log(piss1);
 
     player.ff();
 
