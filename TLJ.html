@@ -150,11 +150,14 @@ function slimeBehav(what, what1, isPush) {
 };
 
 function piss() {
+    PXP += 1+ Math.floor(Math.random() * 7);
+    stream.visible = true;
     piss1.push({
 x: player.x + player.sx * 1.5,
-y: player.y + (player.sy / 2),
+y: stream.y,
 sx: 0,
 sy: 0,
+timeoutCount: 0,
 ff() {
   if(player.bladder > 0) {
     player.causingTrouble = true;
@@ -165,7 +168,15 @@ this.sy ++;
         } else {
             player.causingTrouble = false;
             player.canMove = true;
-        };
+            if(this.x > 0) {
+            stream.visible = false;
+            };
+            if(this.timeoutCount < 350) {
+                this.timeoutCount ++;
+            } else {
+                this.x = -100000000;
+            };
+            };
 }
 
     });
@@ -265,10 +276,17 @@ let stuff = [
 rk: 'r', kf() {console.log("R pressed.")}, onMD() {console.log("MOUSE DOWN.")}, visible: true
 }
 ];
+let BXP = 0;
+let PXP = 0;
+let SXP = 0;
+let percent = 0;
+let ABS = 50;
 let keys = [];
 let cpk = null;
-let text = [];
+let text = [{x: 0, y: h - 30, c: "black", t: "centeredx", txt: "CHAOS: " + percent, ff() {this.txt="CHAOS: " + percent + "%"}, visible: true, f: "40px Comic Sans MS"}];
 let piss1 = [];
+
+
 
 let player = {x:100,y:100,sx:60,sy:75,speed: 5, img:loadImg("./Dan-Doe.png"), canMove: true, visible: true, ff() {
     if(this.visible === true) {
@@ -280,7 +298,15 @@ let player = {x:100,y:100,sx:60,sy:75,speed: 5, img:loadImg("./Dan-Doe.png"), ca
         };
     ctx.drawImage(this.img,this.x,this.y,this.sx,this.sy);
     };
-}, causingTrouble: false, failed: false, bladder: 10000,};
+}, causingTrouble: false, failed: false, bladder: 100,};
+let stream = {x:0,y:0, sy: 10, sx: player.sx, visible: false, ff() {
+    this.x = player.x + player.sx;
+    this.y = player.y + player.sy / 2;
+    if(this.visible) {
+        ctx.fillStyle = "yellow";
+        ctx.fillRect(this.x,this.y,this.sx, this.sy);
+    }
+}};
 let oiv = 0;
 let tiv = 0;
 let frames1 = 0;
@@ -439,6 +465,9 @@ worker(5,5,1,false,5,5);
 //MAIN RENDER LOOP
 function loop() {
 ctx.clearRect(0,0,w,h);
+//SETTING CHAOS METER
+percent = (PXP + SXP + BXP) / ABS * 100;
+
 
 //STUFF FOREACH LOOP
 for(let i = 0; i < stuff.length; i++) {
@@ -519,7 +548,7 @@ frames1 ++;
 console.log(piss1);
 
     player.ff();
-
+stream.ff();
 
 
     requestAnimationFrame(loop);
