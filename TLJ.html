@@ -94,7 +94,7 @@ function collide(what, what1, isPush) {
  if(what.x < what1.x) {
                 what.x -= what.speed * 2;
             };
-            if(what.x > what1.x + what1.sx) {
+            if(what.x > what1.x) {
                 what.x += what.speed * 2;
             };
             if(what.y < what1.y) {
@@ -134,16 +134,16 @@ function slimeBehav(what, what1, isPush) {
 
         if(isPush === false && collide) {
  if(what.x < what1.x) {
-                what.x -= what.speed /2 /2;
+                what.x -= what.speed /2 /2/2;
             };
             if(what.x > what1.x + what1.sx) {
-                what.x += what.speed /2 /2;
+                what.x += what.speed /2 /2/2;
             };
             if(what.y < what1.y) {
-                what.y -= what.speed /2 /2;
+                what.y -= what.speed /2 /2/2;
             };
             if(what.y > what1.y) {
-                what.y += what.speed /2/2;
+                what.y += what.speed /2/2/2;
             };
         };
     };
@@ -185,21 +185,22 @@ this.sy ++;
 function boss() {
 
 stuff.push({
-    x: 300, 
-    y: 300,
+    x: 724, 
+    y: 499,
     sx: 64,
     sy: 128,
     c: "black",
     visible: false,
     speed: 5,
-    returnX: 300,
-    returnY:  300,
+    returnX: 724,
+    returnY:  499,
     switching: 500 + Math.floor(Math.random() * 1000),
     i: 3,
     returning: false,
     dirC: 0,
     dir: 1 + Math.floor(Math.random() * 4),
     ff() {
+        if(player.failed === false) {
         if(this.visible === true && typeof this.distance === "number" && this.distance < w * 0.75 && player.causingTrouble === true) {
 player.failed = true;
         };
@@ -243,7 +244,8 @@ if(this.dir === 4) this.y -= this.speed;
         if(this.x >= w - this.sx) this.dir = 2;
         if(this.y < 0) this.dir = 3;
         if(this.y >= h - this.sy) this.dir = 4;
-    }
+    };
+}
 });
 
 };
@@ -269,9 +271,10 @@ function worker(x,y, index, standing, workspace_xpos, workspace_ypos) {
     dirCount: 0,
     goingBack: false,
     onSit: "rgba(255,0,0,1)",
-    onStand: "rgba(0,0,255,1)",
+    onStand: "rgba(155,0,255,1)",
     speed: 5,
     ff() {
+        if(player.failed === false) {
         if(this.x < 0) this.dir = 1;
         if(this.x >= w - this.sx) this.dir = 2;
         if(this.y < 0) this.dir = 3;
@@ -283,6 +286,9 @@ function worker(x,y, index, standing, workspace_xpos, workspace_ypos) {
             this.dir = 1 + Math.floor(Math.random() * 4);
         };
         if(this.stand === true) {
+               if(player.causingTrouble && typeof this.distance === "number" && this.distance < w * 0.45) {
+                    player.failed = true;
+                };
             this.c = this.onStand;
                this.sx = 64;
             this.sy = 128;
@@ -296,9 +302,7 @@ function worker(x,y, index, standing, workspace_xpos, workspace_ypos) {
                 if(this.y > this.wy) this.y -= this.speed;
                 if(this.y < this.wy) this.y += this.speed;
                 this.goingBack = true;
-                if(player.causingTrouble) {
-                    player.failed = true;
-                }
+             
                 } else {
                     this.stand = false;
                     this.stateCount = 0;
@@ -313,7 +317,7 @@ function worker(x,y, index, standing, workspace_xpos, workspace_ypos) {
             if(this.dir === 2) this.x -= this.speed;
             if(this.dir === 3) this.y += this.speed;
             if(this.dir === 4) this.y -= this.speed;
-             if(player.causingTrouble) {
+             if(player.causingTrouble && typeof this.distance === "number" && this.distance < w * 0.45) {
                     player.failed = true;
                 }
                 };
@@ -328,8 +332,19 @@ function worker(x,y, index, standing, workspace_xpos, workspace_ypos) {
                 this.stand = true;
             }; 
         };
-    }
+    };
+}
     });
+};
+
+function victory() {
+    winCd ++;
+    if(winCd > 128) {
+        victoryScreen.visible = true;
+        if(victoryScreen.y < 0) {
+            victoryScreen.y += 20;
+        }
+    };
 };
 
 //ENGINE CRITICAL VARIABLES
@@ -341,25 +356,110 @@ document.body.appendChild(canvas);
 let w = canvas.width;
 let h = canvas.height;
 let stuff = [
-    {x: 100, y: 100, sx: 200, sy: 50, collides: true, img: loadImg("./treeTR.png"), rotation: 0, mouseOn: false, onMO() {console.log("mouse on.")}, onClick() {console.log("clicked")}, 
-rk: 'r', kf() {console.log("R pressed.");this.rotation += 540;}, onMD() {console.log("MOUSE DOWN.")}, visible: true
+        {x:0, y: 0, sx: w, sy: h, c: "black", visible: true},
+{x: w * 0.33, y: -128, sx: 256, sy: 128, c: "red",  visible: false,
+   ff() {
+        if(player.failed === true) {
+            this.visible = true;
+        };
+        if(this.y < h * 0.50) {
+
+            if(this.visible === true) {
+            this.y += 10;
+            console.log("fires");
+            };
+        };
+    },  onClick() {
+        window.location.reload();
+    },},
+{x: w *0.11, y: 0, sx: w * 0.80, sy: h * 0.80, c:"blue", visible: true},
+{x: (w * 0.11) - 32, y: 0, sx: 32, sy: h * 0.80, visible: true, c: "red", collides: true},
+{x: ((w * 0.11) - 32) + w * 0.80, y: 0, sx: 32, sy: h * 0.80, visible: true, c: "red", collides: true},
+{x: ((w * 0.11) - 32), y: 0, sx: w * 0.80, sy: 32, visible: true, c: "red", collides: true},
+{x: ((w * 0.11) - 32), y: h * 0.11 + h * 0.69, sx: w * 0.80 + 32, sy: 32, visible: true, c: "red", collides: true},
+{x: w * 0.11, y: 32, sx: w * 0.25, sy: w * 0.25, visible: true, c: "green"},
+{x: w * 0.11, y: 32, sx: w * 0.20, sy: h * 0.10, visible: true, c: "white", collides: true},
+{x: w * 0.31, y: 32, sx: w * 0.05, sy: h * 0.1, visible: true, c: "grey", collides: true, mouseOn: false, allItems: 6, itemswegot: 6, 
+breaks: false, peices: 3, seed: (w * 0.05) / 3, bc: "grey", breakcd: 5, breakValue: 4,onMO() {
+         if(typeof this.distance === "number" && this.distance < w * 0.15) {
+    if(this.itemswegot > 0) {
+   
+    toughtString = "Steal food/drinks from the fridge? Stuff inside: " + this.allItems + "/" + this.itemswegot;
+    } else {
+        toughtString = "Break the fridge?";
+    };
+
 }
+},
+ff() {
+    if(this.itemswegot < 1) {
+        this.breaks = true;
+    }
+},
+onClick() {
+    if(typeof this.distance === "number" && this.distance < w * 0.15) {
+if(this.itemswegot > 0) {
+    this.itemswegot --;
+    SXP += 2
+    player.bladder += 10
+    player.causingTrouble = true;
+};
+};
+}, onCMU() {
+    player.causingTrouble = false;
+}
+},
+{x: w * 0.11, y: 32 + (h * 0.10), sx: h * 0.10, sy: w * 0.20, visible: true, c: "white", collides: true},
+{x: w * 0.12, y: h * 0.25, sx: 16, sy: 16, collides: true, c: "blue", visible: true, clickCount: 0,onMO() {
+    if(typeof this.distance === "number" && this.distance < w * 0.15) {
+    console.log("MOUSE ON.");
+    toughtString = "pour the water out into the running toaster?";
+    };
+},
+ onClick() {
+        if(typeof this.distance === "number" && this.distance < w * 0.15) {
+        this.clickCount ++;
+        if(this.clickCount < 2) {
+    this.x = -this.x;
+    SXP += 5;
+    toaster_wrecked = true;
+player.canMove = false;
+player.causingTrouble = true;
+for(let i=0; i < 100; i ++) {
+    darknessrgba.alpha += 0.005;
+};
+    //PLAY SOUND
+setTimeout(function() {player.canMove = true; player.causingTrouble = false;}, 3300);
+        };
+    };
+}, mouseOn: false
+},
+{x: w * 0.12 - 8, y: h * 0.25 - 64, sx: 50, sy: 40, clickCount: 0, c: "grey", visible: true, ff() {
+    if(toaster_wrecked === true) {
+        this.c === "black";
+    };
+},},
+
 ];
 let BXP = 0;
+let toaster_wrecked = false;
 let PXP = 0;
+let winCd = 0;
 let SXP = 0;
 let percent = 0;
 let ABS = 50;
+let seconds = 0;
+let minutes = 0;
+let mouseX = 0;
+let mouseY = 0;
+let hours = 0;
+let darknessrgba = {r: 0, g: 0, b: 0, alpha: 0,};
+let toughtString = "Piss The Floor?";
 let keys = [];
 let cpk = null;
-let text = [{x: undefined, y: h - 30, c: "black", t: "centeredx", txt: "CHAOS: " + percent, ff() {this.txt="CHAOS: " + Math.ceil(percent) + "%"}, visible: true, f: "40px Comic Sans MS"}];
-let piss1 = [];
-
-
-
-let player = {x:100,y:100,sx:60,sy:75,speed: 5, img:loadImg("./Dan-Doe.png"), canMove: true, visible: true, ff() {
+let player = {x:w /2,y:h /2,sx:60,sy:75,speed: 5, img:loadImg("./Dan-Doe.png"), canMove: true, visible: true, ff() {
     if(this.visible === true) {
-        if(this.canMove === true) {
+        if(this.canMove === true &&this.failed === false && percent < 100) {
     if(cpk === "w" || cpk === "W") this.y -= this.speed;
     if(cpk === "a" || cpk === "A") this.x -= this.speed;
     if(cpk === "s" || cpk === "S") this.y += this.speed;
@@ -368,6 +468,23 @@ let player = {x:100,y:100,sx:60,sy:75,speed: 5, img:loadImg("./Dan-Doe.png"), ca
     ctx.drawImage(this.img,this.x,this.y,this.sx,this.sy);
     };
 }, causingTrouble: false, failed: false, bladder: 100,canPee: true,};
+let text = [
+    {x: undefined, y: h - 10, c: "white", t: "centeredx", txt: "CHAOS: " + percent, ff() {this.txt="CHAOS: " + Math.ceil(percent) + "%"}, visible: true, f: "40px Comic Sans MS"},
+{x: 0, y: h - 10, c: "white", txt: '',visible: true, f: "30px Comic Sans MS", ff() {this.txt = hours + ', ' + minutes + ', ' + seconds}},
+{x: w - (ctx.measureText("Pee: " + player.bladder).width ), y: h - 10, c: "white", visible: true, f: "30px Comic Sans MS", txt: "Pee: " + player.bladder, ff() {this.txt = "Pee: " + player.bladder; this.x = w - ctx.measureText("Pee: " + player.bladder).width}},
+{x: undefined, y: h - 60, c: "white", t: "centeredx", visible: true,f: "25px Comic Sans MS", txt: toughtString, ff() {this.txt = toughtString}}
+];
+let piss1 = [];
+let victoryScreen = {x: 0, y: -h, sx: w, sy: h, color: "blue", visible: false, ff() {
+    if(this.visible === true) {
+        if(cpk === ' ') {
+            window.location.reload();
+        };
+    };
+}};
+
+
+
 let stream = {x:0,y:0, sy: 10, sx: player.sx, visible: false, ff() {
     this.x = player.x + player.sx;
     this.y = player.y + player.sy / 2;
@@ -430,18 +547,24 @@ if(typeof o.onMD === "function") {
 };
 
 if(typeof o.onClick === "function") {
-let intersect = e.clientX >= o.x &&
-            e.clientX <= o.x + o.sx &&
-            e.clientY >= o.y &&
-            e.clientY <= o.y + o.sy;
+let intersect = mouseX >= o.x &&
+            mouseX <= o.x + o.sx &&
+            mouseY >= o.y &&
+            mouseY <= o.y + o.sy;
 
 if(intersect) {
     o.onClick();
-
-if(typeof o.breaks === "boolean" && typeof o.seed === "number" && typeof o.bc === "string" && typeof o.peices === "number" &&  typeof o.breakcd === "number") {
+if(typeof o.stealable === "boolean" && typeof o.stealValue === "number") {
+    o.x = -100000;
+    SXP += o.stealValue;
+}
+if(typeof o.breaks === "boolean" && typeof o.seed === "number" && typeof o.bc === "string" && typeof o.peices === "number" &&  typeof o.breakcd === "number" && o.breaks === true) {
+    if(mbd === 0) {
+    player.causingTrouble = true;
 if(o.breakcd > 0) {
     o.breakcd --;
 } else {
+    player.causingTrouble = false;
     if(typeof o.collides === "boolean") {
         o.collides = false;
     };
@@ -453,8 +576,17 @@ let p = o.peices;
 let bco = o.bc;
 let pe = o.peices;
 let s = o.seed;
-
+BXP += o.breakValue;
+o.x = -100000000000000000;
+if(typeof o.onClick === "function") {
+    o.onClick = () => {};
+};
 for(let i = 0; i < pe; i++) {
+    if(i < pe -1) {
+        player.causingTrouble = true;
+    } else {
+        player.causingTrouble = false;
+    };
     stuff.push({
         x:x,
         y:y,
@@ -469,19 +601,22 @@ for(let i = 0; i < pe; i++) {
         ff() {
             this.howLongCount ++;
             if(this.howLongCount < this.forHowLong) {
-                if(this.dir === 1) this.x += 1;
-                if(this.dir === 2) this.x -= 1;
-                if(this.dir === 3) this.y += 1;
-                if(this.dir === 4) this.y -= 1;
-                if(this.dir === 5) this.y ++; this.x --;
-                if(this.dir === 6) this.y --; this.x ++;
-                if(this.dir === 7) this.y --; this.x --;
-                if(this.dir === 8) this.y ++; this.x ++;
+                if(this.dir === 1) this.x += 1 + Math.floor(Math.random() * 4);
+                if(this.dir === 2) this.x -= 1+ Math.floor(Math.random() * 4);
+                if(this.dir === 3) this.y += 1+ Math.floor(Math.random() * 4);
+                if(this.dir === 4) this.y -= 1+ Math.floor(Math.random() * 4);
+                if(this.dir === 5) this.y += Math.floor(Math.random() * 4); this.x += 1+ Math.floor(Math.random() * 4);
+                if(this.dir === 6) this.y -= Math.floor(Math.random() * 4); this.x -= 1 + Math.floor(Math.random() * 4);
+                if(this.dir === 7) this.y -= Math.floor(Math.random() * 4); this.x += 1 + Math.floor(Math.random() * 4);
+                if(this.dir === 8) this.y += Math.floor(Math.random() * 4); this.x += 1 + Math.floor(Math.random() * 4);
             };
         }
     });
 };
-};
+}
+} else {
+    player.causingTrouble = false;
+}; 
 };
 };
 };
@@ -506,6 +641,7 @@ let intersect = e.clientX >= o.x &&
 
 if(intersect) {
     o.onCMU();
+    
 };
 };
 };
@@ -514,7 +650,8 @@ if(intersect) {
 window.addEventListener("mousemove", e => {
 for(let i = 0; i < stuff.length; i ++) {
     let o = stuff[i];
-
+mouseX = e.clientX;
+mouseY = e.clientY;
 
 if(typeof o.mouseOn === "boolean") {
 let intersect = e.clientX >= o.x &&
@@ -531,15 +668,40 @@ if(intersect) {
 };
 });
 
+
+//NECESSARY FUNCTION CALLS / INTERVAL SETTINGS
 worker(5,5,1,false,5,5);
 boss();
+
+setInterval(function() {
+    seconds ++;
+    if(seconds > 59) {
+        seconds = 0;
+        minutes ++;
+    };
+    if(minutes > 59) {
+        hours ++;
+    };
+},1000);
+
 
 //MAIN RENDER LOOP
 function loop() {
 ctx.clearRect(0,0,w,h);
 //SETTING CHAOS METER
 percent = (PXP + SXP + BXP) / ABS * 100;
+if(percent >= 100) {
+    console.log("CONGRATULATIONS! U BEAT THE GAME. RETRY OR QUIT?");
+    victory();
+};
 
+if(player.failed === true) {
+    if(percent > 80) {
+        console.log("YOU FAILED... BUT YOU ALMOST MADE IT! :)");
+    } else {
+    console.log("YOU FAILED.");
+    };
+};
 
 //STUFF FOREACH LOOP
 for(let i = 0; i < stuff.length; i++) {
@@ -580,12 +742,13 @@ for(let i = 0; i < text.length; i++) {
 let t = text[i];
 
 if(typeof t === "object") {
-    if(typeof t.ff === "function") {
+    if(typeof t.ff === "function" && player.failed === false) {
         t.ff();
     };
     if(t.visible) {
         ctx.fillStyle = t.c;
         ctx.font = t.f;
+        if(typeof t.t === "string") {
         if(t.t !== "centeredx" && t.t !== "centeredy" || t.t !== "allcentered") {
             ctx.fillText(t.txt, t.x,t.y);
         };
@@ -597,6 +760,9 @@ if(typeof t === "object") {
         };
         if(t.t === "allcentered") {
             ctx.fillText(t.txt, (w - ctx.measureText(t.txt).width) / 2, (h - ctx.measureText(t.txt).height) /2);
+        };
+        } else {
+             ctx.fillText(t.txt, t.x,t.y);
         };
     };
 };
@@ -615,14 +781,16 @@ for(let i = 0; i < piss1.length; i++) {
     ctx.fillRect(p.x,p.y,p.sx,p.sy);
     p.ff();
 };
-
+//OTHER
 frames1 ++;
-console.log(player.failed);
-
-    player.ff();
+console.log(player.causingTrouble);
+player.ff();
 stream.ff();
-
-
+victoryScreen.ff();
+ctx.fillStyle = victoryScreen.color;
+ctx.fillRect(victoryScreen.x, victoryScreen.y, victoryScreen.sx, victoryScreen.sy);
+ctx.fillStyle = "rgba(" + darknessrgba.r + ", " + darknessrgba.g +", " + darknessrgba.b + "," + darknessrgba.alpha +")";
+ctx.fillRect(0,0,w,h);
     requestAnimationFrame(loop);
 };
 
