@@ -161,7 +161,9 @@ timeoutCount: 0,
 ff() {
   if(player.bladder > 0) {
     player.causingTrouble = true;
+    if(this.x > 0) {
             player.bladder --;
+    };
             player.canMove = false;
 this.sx ++;
 this.sy ++;
@@ -171,7 +173,7 @@ this.sy ++;
             if(this.x > 0) {
             stream.visible = false;
             };
-            if(this.timeoutCount < 350) {
+            if(this.timeoutCount < 0) {
                 this.timeoutCount ++;
             } else {
                 this.x = -100000000;
@@ -240,10 +242,10 @@ if(this.dir === 3) this.y += this.speed;
 if(this.dir === 4) this.y -= this.speed;
             };
         };
-   if(this.x < 0) this.dir = 1;
-        if(this.x >= w - this.sx) this.dir = 2;
-        if(this.y < 0) this.dir = 3;
-        if(this.y >= h - this.sy) this.dir = 4;
+ if(this.x < (w * 0.11) - 32) this.dir = 1;
+        if(this.x >= w * 0.80 - this.sx) this.dir = 2;
+        if(this.y <= 32) this.dir = 3;
+        if(this.y >= h * 0.80 - this.sy) this.dir = 4;
     };
 }
 });
@@ -275,15 +277,15 @@ function worker(x,y, index, standing, workspace_xpos, workspace_ypos) {
     speed: 5,
     ff() {
         if(player.failed === false) {
-        if(this.x < 0) this.dir = 1;
-        if(this.x >= w - this.sx) this.dir = 2;
-        if(this.y < 0) this.dir = 3;
-        if(this.y >= h - this.sy) this.dir = 4;
+        if(this.x < (w * 0.11) - 32) this.dir = 1;
+        if(this.x >= w * 0.80 - this.sx) this.dir = 2;
+        if(this.y <= 32) this.dir = 3;
+        if(this.y >= h * 0.80 - this.sy) this.dir = 4;
         if(this.dirCount < 100) {
             this.dirCount ++;
         } else {
             this.dirCount = 0;
-            this.dir = 1 + Math.floor(Math.random() * 4);
+            this.dir = 1 + Math.floor(Math.random() * 6);
         };
         if(this.stand === true) {
                if(player.causingTrouble && typeof this.distance === "number" && this.distance < w * 0.45) {
@@ -319,10 +321,13 @@ function worker(x,y, index, standing, workspace_xpos, workspace_ypos) {
             if(this.dir === 4) this.y -= this.speed;
              if(player.causingTrouble && typeof this.distance === "number" && this.distance < w * 0.45) {
                     player.failed = true;
-                }
+                };
                 };
             };
         } else {
+            if(typeof this.distance === "number" && this.distance < w * 0.15 && player.causingTrouble === true) {
+                player.failed = true;
+            };
             this.c = this.onSit;
             this.sx = 64;
             this.sy = 64;
@@ -439,7 +444,98 @@ setTimeout(function() {player.canMove = true; player.causingTrouble = false;}, 3
         this.c === "black";
     };
 },},
-
+{x: ((w * 0.11) - 32) + w * 0.80 - 74, y: h * 0.5, sx: 74, sy: 146, c: "grey", collides: true, visible: true},
+{x: ((w * 0.11) - 32) + w * 0.80 - 74, y: h * 0.5 - 219, sx: 74, sy: 146, c: "grey", collides: true, visible: true},
+{x: ((w * 0.11) - 32) + w * 0.80 - 170, y: h * 0.5 - 219 + 74 - 32, sx: 64, sy: 64, c: "grey", collides: true, visible: true},
+{x: ((w * 0.11) - 32) + w * 0.80 - 170, y: h * 0.5 + 74 - 32, sx: 64, sy: 64, c: "grey", collides: true, visible: true},
+{x: ((w * 0.11) - 32) + w * 0.80 - 60, type: "COMPUTA", y: h * 0.5 + 74 - 25,sx: 60, sy: 50, c: "yellow", visible: true, useCount: 0,mouseOn: false, 
+    onMO() {
+        if(typeof this.distance === "number" && this.distance < w * 0.20) {
+        toughtString = "Delete files?";
+        };
+    },
+    onClick() {
+if(typeof this.distance && this.distance < w * 0.20) {
+    if(this.useCount < 3) {
+    this.useCount ++;
+SXP += 4 / this.useCount;
+player.canMove = false;
+player.causingTrouble = true;
+setTimeout(function() {player.causingTrouble = false; player.canMove = true;}, 2500);
+    };
+};
+    }
+},
+{x: ((w * 0.11) - 32) + w * 0.80 - 60, type: "COMPUTA", y: h * 0.5 - 219 + 74- 25,sx: 60, sy: 50, c: "yellow", visible: true, useCount: 0,mouseOn: false, 
+    onMO() {
+        if(typeof this.distance === "number" && this.distance < w * 0.20) {
+        toughtString = "Delete files?";
+        };
+    },
+    onClick() {
+if(typeof this.distance && this.distance < w * 0.20) {
+    if(this.useCount < 3) {
+    this.useCount ++;
+SXP += 4 / this.useCount;
+player.canMove = false;
+player.causingTrouble = true;
+setTimeout(function() {player.causingTrouble = false; player.canMove = true;}, 2500);
+    };
+};
+    }
+},
+{x: ((w * 0.11) - 32) + w * 0.80 - 60, y: h * 0.5 - 219 + 74- 65, sx: 16, sy: 5, c: "black", visible: true, mouseOn: false, onMO() {
+    if(typeof this.distance === "number" && this.distance < w *0.20) {
+        toughtString = "Break the pencil?";
+    };
+}, breaks: true, peices: 2, seed: 10, breakValue: 1.501001110101010101, bc: "yellow",breakcd: 1
+},
+{x:  ((w * 0.11) - 32) + w * 0.80 - 60, y: h * 0.5 + 74- 65, sx: 40, sy: 25, visible: true, c:"white"},
+{x: w * 0.5, y: h * 0.11 + h * 0.69 - 64, sx: 64, sy: 64, visible: true, c:"black", useCount: 0, collides: true, mouseOn: false,onMO() {
+    if(this.useCount < 1) {
+    if(player.hasLighter === true) {
+        toughtString = "Light the trash bin on fire?";
+    };
+};
+},
+onClick() {
+if(player.hasLighter === true && this.useCount < 1) {
+    this.c = "red";
+    player.causingTrouble = true;
+    player.canMove = false;
+    setTimeout(function() {player.causingTrouble = false;
+        player.canMove = true;
+        BXP += 5;
+    }, 3000);
+    setTimeout(function() {this.c = "grey"}, 10000);
+        this.useCount ++;
+};
+}
+},
+{x: 332, y: 65, sx: 16, sy: 16, c: "grey", visible: true,mouseOn: false, onMO() {
+    if(typeof this.distance === "number" && this.distance < w *0.20) {
+        toughtString = "Permanently borrow the lighter?";
+    };
+},onClick() {
+    if(typeof this.distance === "number" && this.distance < w *0.20) {
+    this.x = 0-this.x;
+    player.hasLighter = true;
+    SXP ++;
+    };
+}},
+{x: 256, y: 35, sx: 50, sy: 50, c: "grey", visible: true,mouseOn: false, drinkNum: 0,onMO() {
+    if(typeof this.distance === "number" && this.distance < w *0.20 && this.drinkNum < 1) {
+        toughtString = "Drink ALL of the coffee? (It is currently your bosses favorite most expensive coffee)";
+    };
+},onClick() {
+    if(typeof this.distance === "number" && this.distance < w *0.20 && this.drinkNum < 1) {
+SXP += 8;
+player.speed = 25;
+player.bladder += 25;
+this.drinkNum ++;
+setTimeout(function() {player.speed = 5}, 10000);
+    };
+}},
 ];
 let BXP = 0;
 let toaster_wrecked = false;
@@ -467,7 +563,7 @@ let player = {x:w /2,y:h /2,sx:60,sy:75,speed: 5, img:loadImg("./Dan-Doe.png"), 
         };
     ctx.drawImage(this.img,this.x,this.y,this.sx,this.sy);
     };
-}, causingTrouble: false, failed: false, bladder: 100,canPee: true,};
+}, causingTrouble: false, failed: false, bladder: 10,canPee: true,hasLighter: false};
 let text = [
     {x: undefined, y: h - 10, c: "white", t: "centeredx", txt: "CHAOS: " + percent, ff() {this.txt="CHAOS: " + Math.ceil(percent) + "%"}, visible: true, f: "40px Comic Sans MS"},
 {x: 0, y: h - 10, c: "white", txt: '',visible: true, f: "30px Comic Sans MS", ff() {this.txt = hours + ', ' + minutes + ', ' + seconds}},
@@ -670,8 +766,9 @@ if(intersect) {
 
 
 //NECESSARY FUNCTION CALLS / INTERVAL SETTINGS
-worker(5,5,1,false,5,5);
 boss();
+worker(((w * 0.11) - 32) + w * 0.80 - 170, h * 0.5 - 219 + 74 - 32, 0,false,((w * 0.11) - 32) + w * 0.80 - 170, h * 0.5 - 219 + 74 - 32,);
+worker(((w * 0.11) - 32) + w * 0.80 - 170, h * 0.5  + 74 - 32, 0,false,((w * 0.11) - 32) + w * 0.80 - 170, h * 0.5 + 74 - 32,);
 
 setInterval(function() {
     seconds ++;
@@ -690,8 +787,9 @@ function loop() {
 ctx.clearRect(0,0,w,h);
 //SETTING CHAOS METER
 percent = (PXP + SXP + BXP) / ABS * 100;
-if(percent >= 100) {
+if(percent > 99) {
     console.log("CONGRATULATIONS! U BEAT THE GAME. RETRY OR QUIT?");
+    darknessrgba.alpha = 0;
     victory();
 };
 
@@ -783,7 +881,7 @@ for(let i = 0; i < piss1.length; i++) {
 };
 //OTHER
 frames1 ++;
-console.log(player.causingTrouble);
+console.log(mouseX + " "+ mouseY);
 player.ff();
 stream.ff();
 victoryScreen.ff();
