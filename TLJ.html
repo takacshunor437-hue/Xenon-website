@@ -191,7 +191,7 @@ stuff.push({
     y: 499,
     sx: 64,
     sy: 128,
-    c: "black",
+   img: loadImg("./boss.png"),
     visible: false,
     speed: 5,
     returnX: 724,
@@ -203,7 +203,7 @@ stuff.push({
     dir: 1 + Math.floor(Math.random() * 4),
     ff() {
         if(player.failed === false) {
-        if(this.visible === true && typeof this.distance === "number" && this.distance < w * 0.75 && player.causingTrouble === true) {
+        if(this.visible === true && typeof this.distance === "number" && this.distance < w * 0.35 && player.causingTrouble === true) {
 player.failed = true;
         };
                this.i += 1;
@@ -230,7 +230,7 @@ if(this.x > this.returnX) {this.x -= this.speed};
 if(this.x < this.returnX) {this.x += this.speed};
 if(this.y > this.returnY) {this.y -= this.speed;};
 if(this.y < this.returnY)  {this.y += this.speed;};
-if(this.x === this.returnX && this.y === this.returnY) {
+if(this.x + this.sx >= this.returnX  && this.y + this.sy >= this.returnY ) {
     this.returning = false;
     this.visible = false;
 }
@@ -263,17 +263,17 @@ function worker(x,y, index, standing, workspace_xpos, workspace_ypos) {
     sy: 0,
     i: index,
     type: "npc",
-    c: null,
     wx: workspace_xpos,
     wy: workspace_ypos,
     stand: standing,
     visible: true,
     dir: 0,
+    img: loadImg("./workerUp.png"),
     stateCount: 0,
     dirCount: 0,
     goingBack: false,
-    onSit: "rgba(255,0,0,1)",
-    onStand: "rgba(155,0,255,1)",
+    onSit: loadImg("./workerUp.png"),
+    onStand: loadImg("./worker.png"),
     speed: 5,
     ff() {
         if(player.failed === false) {
@@ -288,10 +288,10 @@ function worker(x,y, index, standing, workspace_xpos, workspace_ypos) {
             this.dir = 1 + Math.floor(Math.random() * 6);
         };
         if(this.stand === true) {
-               if(player.causingTrouble && typeof this.distance === "number" && this.distance < w * 0.45) {
+               if(player.causingTrouble && typeof this.distance === "number" && this.distance < w * 0.35) {
                     player.failed = true;
                 };
-            this.c = this.onStand;
+            this.img = this.onStand;
                this.sx = 64;
             this.sy = 128;
             
@@ -309,7 +309,7 @@ function worker(x,y, index, standing, workspace_xpos, workspace_ypos) {
                     this.stand = false;
                     this.stateCount = 0;
                     this.goingBack = false;
-                      this.c = this.onSit;
+                      this.img = this.onSit;
             this.sx = 64;
             this.sy = 64;
                 };
@@ -319,7 +319,7 @@ function worker(x,y, index, standing, workspace_xpos, workspace_ypos) {
             if(this.dir === 2) this.x -= this.speed;
             if(this.dir === 3) this.y += this.speed;
             if(this.dir === 4) this.y -= this.speed;
-             if(player.causingTrouble && typeof this.distance === "number" && this.distance < w * 0.45) {
+             if(player.causingTrouble && typeof this.distance === "number" && this.distance < w * 0.35) {
                     player.failed = true;
                 };
                 };
@@ -355,36 +355,21 @@ function victory() {
 //ENGINE CRITICAL VARIABLES
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.width = 1366;
+canvas.height =633;
 document.body.appendChild(canvas);
 let w = canvas.width;
 let h = canvas.height;
 let stuff = [
-        {x:0, y: 0, sx: w, sy: h, c: "black", visible: true},
-{x: w * 0.33, y: -128, sx: 256, sy: 128, c: "red",  visible: false,
-   ff() {
-        if(player.failed === true) {
-            this.visible = true;
-        };
-        if(this.y < h * 0.50) {
-
-            if(this.visible === true) {
-            this.y += 10;
-            console.log("fires");
-            };
-        };
-    },  onClick() {
-        window.location.reload();
-    },},
+            {x:0, y: 0, sx: w, sy: h, c: "black", visible: true},
 {x: w *0.11, y: 0, sx: w * 0.80, sy: h * 0.80, c:"blue", visible: true},
 {x: (w * 0.11) - 32, y: 0, sx: 32, sy: h * 0.80, visible: true, c: "red", collides: true},
 {x: ((w * 0.11) - 32) + w * 0.80, y: 0, sx: 32, sy: h * 0.80, visible: true, c: "red", collides: true},
 {x: ((w * 0.11) - 32), y: 0, sx: w * 0.80, sy: 32, visible: true, c: "red", collides: true},
 {x: ((w * 0.11) - 32), y: h * 0.11 + h * 0.69, sx: w * 0.80 + 32, sy: 32, visible: true, c: "red", collides: true},
-{x: w * 0.11, y: 32, sx: w * 0.25, sy: w * 0.25, visible: true, c: "green"},
+{x: w * 0.11, y: 32, sx: w * 0.25, sy: w * 0.25, visible: true, img: loadImg("./kitchenfloor.png")},
 {x: w * 0.11, y: 32, sx: w * 0.20, sy: h * 0.10, visible: true, c: "white", collides: true},
-{x: w * 0.31, y: 32, sx: w * 0.05, sy: h * 0.1, visible: true, c: "grey", collides: true, mouseOn: false, allItems: 6, itemswegot: 6, 
+{x: w * 0.31, y: 32, sx: w * 0.05, sy: h * 0.1, visible: true, img: loadImg("./fridge.png"), rotation: 90, collides: true, mouseOn: false, allItems: 6, itemswegot: 6, 
 breaks: false, peices: 3, seed: (w * 0.05) / 3, bc: "grey", breakcd: 5, breakValue: 4,onMO() {
          if(typeof this.distance === "number" && this.distance < w * 0.15) {
     if(this.itemswegot > 0) {
@@ -405,9 +390,16 @@ onClick() {
     if(typeof this.distance === "number" && this.distance < w * 0.15) {
 if(this.itemswegot > 0) {
     this.itemswegot --;
-    SXP += 2
-    player.bladder += 10
+    SXP += 2;
+    if(Math.floor(Math.random() * 2) + 1 === 1) {
+        playS("./glubglubglub.wav");
+    } else {
+        playS("./yummy.wav");
+    };
+    player.bladder += 10;
     player.causingTrouble = true;
+} else {
+    playS("./VANDALISM.wav");
 };
 };
 }, onCMU() {
@@ -415,7 +407,7 @@ if(this.itemswegot > 0) {
 }
 },
 {x: w * 0.11, y: 32 + (h * 0.10), sx: h * 0.10, sy: w * 0.20, visible: true, c: "white", collides: true},
-{x: w * 0.12, y: h * 0.25, sx: 16, sy: 16, collides: true, c: "blue", visible: true, clickCount: 0,onMO() {
+{x: w * 0.12, y: h * 0.25, sx: 16, sy: 16, collides: true, img: loadImg("./waterglass.png"), visible: true, clickCount: 0,onMO() {
     if(typeof this.distance === "number" && this.distance < w * 0.15) {
     console.log("MOUSE ON.");
     toughtString = "pour the water out into the running toaster?";
@@ -427,6 +419,7 @@ if(this.itemswegot > 0) {
         if(this.clickCount < 2) {
     this.x = -this.x;
     SXP += 5;
+    playS("./electricity.wav");
     toaster_wrecked = true;
 player.canMove = false;
 player.causingTrouble = true;
@@ -439,16 +432,16 @@ setTimeout(function() {player.canMove = true; player.causingTrouble = false;}, 3
     };
 }, mouseOn: false
 },
-{x: w * 0.12 - 8, y: h * 0.25 - 64, sx: 50, sy: 40, clickCount: 0, c: "grey", visible: true, ff() {
+{x: w * 0.12 - 8, y: h * 0.25 - 64, sx: 50, sy: 40, clickCount: 0, img: loadImg("./toaster.png"), visible: true, ff() {
     if(toaster_wrecked === true) {
         this.c === "black";
     };
 },},
 {x: ((w * 0.11) - 32) + w * 0.80 - 74, y: h * 0.5, sx: 74, sy: 146, c: "grey", collides: true, visible: true},
 {x: ((w * 0.11) - 32) + w * 0.80 - 74, y: h * 0.5 - 219, sx: 74, sy: 146, c: "grey", collides: true, visible: true},
-{x: ((w * 0.11) - 32) + w * 0.80 - 170, y: h * 0.5 - 219 + 74 - 32, sx: 64, sy: 64, c: "grey", collides: true, visible: true},
-{x: ((w * 0.11) - 32) + w * 0.80 - 170, y: h * 0.5 + 74 - 32, sx: 64, sy: 64, c: "grey", collides: true, visible: true},
-{x: ((w * 0.11) - 32) + w * 0.80 - 60, type: "COMPUTA", y: h * 0.5 + 74 - 25,sx: 60, sy: 50, c: "yellow", visible: true, useCount: 0,mouseOn: false, 
+{x: ((w * 0.11) - 32) + w * 0.80 - 170, y: h * 0.5 - 219 + 74 - 32, sx: 80, sy: 80, img: loadImg("./chair.png"), rotation: 180, collides: true, visible: true},
+{x: ((w * 0.11) - 32) + w * 0.80 - 170, y: h * 0.5 + 74 - 32, sx: 80, sy: 80, img: loadImg("./chair.png"), rotation: 180,collides: true, visible: true},
+{x: ((w * 0.11) - 32) + w * 0.80 - 60, type: "COMPUTA", y: h * 0.5 + 74 - 25,sx: 60, sy: 50, img: loadImg("./pc.png"), rotation: 90, visible: true, useCount: 0,mouseOn: false, 
     onMO() {
         if(typeof this.distance === "number" && this.distance < w * 0.20) {
         toughtString = "Delete files?";
@@ -459,6 +452,7 @@ if(typeof this.distance && this.distance < w * 0.20) {
     if(this.useCount < 3) {
     this.useCount ++;
 SXP += 4 / this.useCount;
+playS("./keyboard.wav");
 player.canMove = false;
 player.causingTrouble = true;
 setTimeout(function() {player.causingTrouble = false; player.canMove = true;}, 2500);
@@ -466,7 +460,7 @@ setTimeout(function() {player.causingTrouble = false; player.canMove = true;}, 2
 };
     }
 },
-{x: ((w * 0.11) - 32) + w * 0.80 - 60, type: "COMPUTA", y: h * 0.5 - 219 + 74- 25,sx: 60, sy: 50, c: "yellow", visible: true, useCount: 0,mouseOn: false, 
+{x: ((w * 0.11) - 32) + w * 0.80 - 60, type: "COMPUTA", y: h * 0.5 - 219 + 74- 25,sx: 60, sy: 50, img: loadImg("./pc.png"), rotation: 90,  visible: true, useCount: 0,mouseOn: false, 
     onMO() {
         if(typeof this.distance === "number" && this.distance < w * 0.20) {
         toughtString = "Delete files?";
@@ -477,6 +471,7 @@ if(typeof this.distance && this.distance < w * 0.20) {
     if(this.useCount < 3) {
     this.useCount ++;
 SXP += 4 / this.useCount;
+playS("./keyboard.wav");
 player.canMove = false;
 player.causingTrouble = true;
 setTimeout(function() {player.causingTrouble = false; player.canMove = true;}, 2500);
@@ -484,14 +479,8 @@ setTimeout(function() {player.causingTrouble = false; player.canMove = true;}, 2
 };
     }
 },
-{x: ((w * 0.11) - 32) + w * 0.80 - 60, y: h * 0.5 - 219 + 74- 65, sx: 16, sy: 5, c: "black", visible: true, mouseOn: false, onMO() {
-    if(typeof this.distance === "number" && this.distance < w *0.20) {
-        toughtString = "Break the pencil?";
-    };
-}, breaks: true, peices: 2, seed: 10, breakValue: 1.501001110101010101, bc: "yellow",breakcd: 1
-},
-{x:  ((w * 0.11) - 32) + w * 0.80 - 60, y: h * 0.5 + 74- 65, sx: 40, sy: 25, visible: true, c:"white"},
-{x: w * 0.5, y: h * 0.11 + h * 0.69 - 64, sx: 64, sy: 64, visible: true, c:"black", useCount: 0, collides: true, mouseOn: false,onMO() {
+{x:  ((w * 0.11) - 32) + w * 0.80 - 60, y: h * 0.5 + 74- 65, sx: 25, sy: 35, visible: true, img: loadImg("./paper.png"), rotation: 90},
+{x: w * 0.5, y: 32, sx: 64, sy: 64, visible: true, img: loadImg("./trahsbin.png"), useCount: 0, collides: true, mouseOn: false,onMO() {
     if(this.useCount < 1) {
     if(player.hasLighter === true) {
         toughtString = "Light the trash bin on fire?";
@@ -500,19 +489,21 @@ setTimeout(function() {player.causingTrouble = false; player.canMove = true;}, 2
 },
 onClick() {
 if(player.hasLighter === true && this.useCount < 1) {
-    this.c = "red";
+    this.img = loadImg("./trashbin_fire.png");
     player.causingTrouble = true;
     player.canMove = false;
+    darknessrgba.alpha -= 0.09999999;
+    playS("./lighter.wav");
     setTimeout(function() {player.causingTrouble = false;
         player.canMove = true;
         BXP += 5;
     }, 3000);
-    setTimeout(function() {this.c = "grey"}, 10000);
+    setTimeout(function() {this.img = loadImg("./trashbin.png")}, 10000);
         this.useCount ++;
 };
 }
 },
-{x: 332, y: 65, sx: 16, sy: 16, c: "grey", visible: true,mouseOn: false, onMO() {
+{x: 332, y: 65, sx: 16, sy: 16, img: loadImg("./lighter.png"), visible: true,mouseOn: false, onMO() {
     if(typeof this.distance === "number" && this.distance < w *0.20) {
         toughtString = "Permanently borrow the lighter?";
     };
@@ -523,7 +514,7 @@ if(player.hasLighter === true && this.useCount < 1) {
     SXP ++;
     };
 }},
-{x: 256, y: 35, sx: 50, sy: 50, c: "grey", visible: true,mouseOn: false, drinkNum: 0,onMO() {
+{x: 256, y: 35, sx: 50, sy: 50, img: loadImg("./coffeepot.png"), visible: true,mouseOn: false, drinkNum: 0,onMO() {
     if(typeof this.distance === "number" && this.distance < w *0.20 && this.drinkNum < 1) {
         toughtString = "Drink ALL of the coffee? (It is currently your bosses favorite most expensive coffee)";
     };
@@ -532,10 +523,13 @@ if(player.hasLighter === true && this.useCount < 1) {
 SXP += 8;
 player.speed = 25;
 player.bladder += 25;
+playS("./glubglubglub.wav");
 this.drinkNum ++;
 setTimeout(function() {player.speed = 5}, 10000);
     };
 }},
+{x: 630,
+    y:  499, sx: 170, sy: 40, c: "blue", visible: true}
 ];
 let BXP = 0;
 let toaster_wrecked = false;
@@ -571,13 +565,18 @@ let text = [
 {x: undefined, y: h - 60, c: "white", t: "centeredx", visible: true,f: "25px Comic Sans MS", txt: toughtString, ff() {this.txt = toughtString}}
 ];
 let piss1 = [];
-let victoryScreen = {x: 0, y: -h, sx: w, sy: h, color: "blue", visible: false, ff() {
+let victoryScreen = {x: 0, y: -h, sx: w, sy: h, img: loadImg("./Ending.png"), visible: false, ff() {
     if(this.visible === true) {
         if(cpk === ' ') {
             window.location.reload();
         };
     };
 }};
+let failScreen = {y: -h, ff() {
+    if(player.failed === true && this.y < 0) {
+        this.y += 25;
+    };
+}, img: loadImg("./failScreen.png")};
 
 
 
@@ -606,7 +605,9 @@ window.addEventListener("keydown", e => {
         setTimeout(function() {player.canPee = true}, 5000);
         };
     };
-
+if(e.key === " " && player.failed === true) {
+    window.location.reload();
+};
 for(let i = 0; i < stuff.length; i++) {
     let s = stuff[i];
 
@@ -767,8 +768,8 @@ if(intersect) {
 
 //NECESSARY FUNCTION CALLS / INTERVAL SETTINGS
 boss();
-worker(((w * 0.11) - 32) + w * 0.80 - 170, h * 0.5 - 219 + 74 - 32, 0,false,((w * 0.11) - 32) + w * 0.80 - 170, h * 0.5 - 219 + 74 - 32,);
-worker(((w * 0.11) - 32) + w * 0.80 - 170, h * 0.5  + 74 - 32, 0,false,((w * 0.11) - 32) + w * 0.80 - 170, h * 0.5 + 74 - 32,);
+worker(((w * 0.11) - 32) + w * 0.80 - 155, h * 0.5 - 219 + 74 - 32 + 10, 0,false,((w * 0.11) - 32) + w * 0.80 - 155, h * 0.5 - 219 + 74 - 32 + 10,);
+worker(((w * 0.11) - 32) + w * 0.80 - 155, h * 0.5  + 74 - 32 + 10, 0,false,((w * 0.11) - 32) + w * 0.80 - 155, h * 0.5 + 74 - 32 + 10,);
 
 setInterval(function() {
     seconds ++;
@@ -881,12 +882,12 @@ for(let i = 0; i < piss1.length; i++) {
 };
 //OTHER
 frames1 ++;
-console.log(mouseX + " "+ mouseY);
 player.ff();
 stream.ff();
 victoryScreen.ff();
-ctx.fillStyle = victoryScreen.color;
-ctx.fillRect(victoryScreen.x, victoryScreen.y, victoryScreen.sx, victoryScreen.sy);
+failScreen.ff();
+ctx.drawImage(victoryScreen.img, victoryScreen.x,victoryScreen.y, w,h);
+ctx.drawImage(failScreen.img, 0,failScreen.y, w,h);
 ctx.fillStyle = "rgba(" + darknessrgba.r + ", " + darknessrgba.g +", " + darknessrgba.b + "," + darknessrgba.alpha +")";
 ctx.fillRect(0,0,w,h);
     requestAnimationFrame(loop);
