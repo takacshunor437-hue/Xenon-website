@@ -54,11 +54,17 @@ function playSLooped(path, stopStatement) {
 
 
 function cGrav(o) {
+  let v = new THREE.Vector3();
+  const objBB = new THREE.Box3().setFromObject(o.object);
+  objBB.getSize(v);
+objBB.setFromCenterAndSize(o.object.position, v);
 if(typeof o.fs === "undefined") {
     o.fs = 0;
 } else {
-    if(o.grav === true && o.object.position.y > -0.981) {
+    if(o.grav === true && o.object.position.y > 2 + v.y / 2) {
         o.object.position.y -= o.fs;
+    } else {
+      o.object.position.y = 2 + v.y / 2;
     };
 };
 };
@@ -239,6 +245,56 @@ function newLight(intensity, col, x,y,z, setting, isLast) {
   });
 };
 
+function clonePlayer() {
+  let playerMaterial = [
+    newMaterial("bas", "./vitya_else.png"),
+       newMaterial("bas", "./vitya_face.png"),
+      newMaterial("bas", "./vitya_else.png"),
+        newMaterial("bas", "./vitya_else.png"),
+          newMaterial("bas", "./vitya_else.png"),
+            newMaterial("bas", "./vitya_else.png"),
+  ];
+
+  objects.push({
+    object: new THREE.Mesh(
+      new THREE.BoxGeometry(1,2,1),
+      playerMaterial
+    ),
+    grav: true,
+    health: 100,
+    setCount: 0,
+    moveVector: [0,0],
+    speed: 0.13,
+    rotationCount: Math.floor(Math.random() * 650) + 400,
+rotate: 0,
+    ff() {
+
+  this.moveVector[0] = Math.cos(this.object.rotation.y) * this.speed;
+  this.moveVector[1] =  Math.sin(this.object.rotation.y) * this.speed;
+
+this.object.position.x -= this.moveVector[0];
+this.object.position.z -= this.moveVector[1];
+
+      this.rotationCount --;
+      if(this.rotationCount <= 0) {
+        console.log("happens");
+        this.rotationCount =  Math.floor(Math.random() * 650) + 100
+        this.rotate = Math.PI / 5 + Math.random();
+        if(Math.floor(Math.random() * 2) + 1 === 1) {
+          this.object.rotation.y += this.rotate;
+        } else {
+          this.object.rotation.y -= this.rotate;
+        };
+      };
+    },
+    setter() {
+this.object.position.set(addedCam.position.x, addedCam.position.y, addedCam.position.z);
+this.object.rotation.set(0, Math.random()  * 3, 0);
+      world.add(this.object);
+    }
+  });
+};
+
 //VARIABLES
 let c = document.createElement("canvas");
 const renderer = new THREE.WebGLRenderer();
@@ -261,9 +317,9 @@ let objects = [
         new THREE.BoxGeometry(1000,0.00001,1000),
         newMaterial("bas", "./dev.insertTexture.png")
     ), ff() {
-        console.log("WORKS");
+      
         if(addedCam.position.y < this.object.position.y) {
-            addedCam.position.y = 2;
+            addedCam.position.y = 4;
         };
     },
     fs: 0,
@@ -292,6 +348,7 @@ let my = 0;
 let addedCamBehav = () => {};
 let addedCam = addPlayer(75, 1000, 70,  98.1, 70, {x:0,y:0,z:0}, 0.002, 0.01, 0.1);
 addedCamBehav = function() { 
+
   const dir = new THREE.Vector3();
         const forward = new THREE.Vector3();
       addedCam.getWorldDirection(forward);
@@ -349,7 +406,7 @@ addedCamBehav = function() {
       } else {
       };
      
-      if(addedCam.position.y > 2) {
+      if(addedCam.position.y > 4) {
       addedCam.position.y -= playerGravity;
     };
 };
@@ -357,6 +414,7 @@ addedCamBehav = function() {
 addedCam.rotation.order = "YXZ";
 
 const raycaster = new THREE.Raycaster();
+world.background = new THREE.Color(rgba(0,0,255,1));
 
 
 //EVENTLISTENERS
@@ -425,6 +483,12 @@ window.addEventListener("mousemove", e => {
 window.addEventListener("keydown", e => {
     cpk = e.key;
     keys[e.key] = true;
+
+  if(cpk === "c" || cpk === "C") {
+    clonePlayer();
+  };
+
+
 });
 
 window.addEventListener("keyup", e => {
