@@ -54,17 +54,31 @@ function playSLooped(path, stopStatement) {
 
 
 function cGrav(o) {
+
   let v = new THREE.Vector3();
   const objBB = new THREE.Box3().setFromObject(o.object);
   objBB.getSize(v);
+  let timeout = 0;
 objBB.setFromCenterAndSize(o.object.position, v);
 if(typeof o.fs === "undefined") {
     o.fs = 0;
 } else {
-    if(o.grav === true && o.object.position.y > 2 + v.y / 2) {
+    if(o.object.position.y >= 2 + v.y / 2) {
+      if(o.falling === true) {
         o.object.position.y -= o.fs;
+        o.falling = true;
+        o.kineticEnergy = (o.object.position.y - (2 + v.y / 2)) * o.mass * 1;
+        o.impulse = o.mass * o.fs;
+      };
     } else {
-      o.object.position.y = 2 + v.y / 2;
+      o.fs = 0;
+if(timeout < 1) {
+  o.object.position.y = 2 + v.y / 2;
+  o.kineticEnergy = 0;
+  o.impulse = 0;
+  o.falling = false;
+};
+timeout ++;
     };
 };
 };
@@ -126,7 +140,7 @@ const objBB = new THREE.Box3().setFromObject(o.object);
  playerBB.setFromCenterAndSize( cam.position, playerSize );
    
   if(!playerBB.intersectsBox(objBB)) return;
-  if(cam.position.x <= o.object.position.x) cam.position.x -= addedCamspeed * 2;
+    if(cam.position.x <= o.object.position.x) cam.position.x -= addedCamspeed * 2;
   if(cam.position.x >= o.object.position.x) cam.position.x += addedCamspeed * 2;
 
   if(cam.position.z <= o.object.position.z) cam.position.z -= addedCamspeed * 2;
@@ -139,16 +153,26 @@ const objBB = new THREE.Box3().setFromObject(o.object);
 
 //A PUSH FUNCTION
 
+
  function push(o, cam){
 const objBB = new THREE.Box3().setFromObject(o.object);
  playerBB.setFromCenterAndSize( cam.position, playerSize );
-   
+let timeout = 0;
+if(playerBB.intersectsBox(objBB)) {
+ o.v = (addedCam.impulse - o.mass) - o.friction;
+} else {
+  timeout ++;
+  if(timeout < 2) {
+  o.v = 0;
+  };
+};
+let v = o.v;
   if(!playerBB.intersectsBox(objBB)) return;
-  if(cam.position.x <= o.object.position.x) o.object.position.x += addedCamspeed * 2;
-  if(cam.position.x >= o.object.position.x) o.object.position.x -= addedCamspeed * 2;
-
-  if(cam.position.z <= o.object.position.z) o.object.position.z += addedCamspeed * 2;
-  if(cam.position.z >= o.object.position.z) o.object.position.z -= addedCamspeed * 2;
+  if(cam.position.x <= o.object.position.x) o.object.position.x += v;
+  if(cam.position.x >= o.object.position.x) o.object.position.x -= v;
+  if(cam.position.z <= o.object.position.z) o.object.position.z += v;
+  if(cam.position.z >= o.object.position.z) o.object.position.z -= v;
+console.log(v);
 };
 
 
@@ -263,17 +287,32 @@ function clonePlayer() {
     grav: true,
     health: 100,
     setCount: 0,
+    canBalloon: true,
+    pullingOn: 0,
     moveVector: [0,0],
+    flying: false,
     speed: 0.13,
+    mass: 75,
+    impulse: 0,
+    falling: true,
     rotationCount: Math.floor(Math.random() * 650) + 400,
 rotate: 0,
     ff() {
-
+      //SAMPLE USAGE FOR THE BALLOON GUN
+      if(this.flying === true) {
+  this.object.position.y += (this.pullingOn - this.mass) / 100;
+};
+if(this.falling === false &&typeof this.impulse === "number") {
+  this.impulse = this.speed * this.mass;
+};
+//------------------
+if(this.flying === false && this.falling === false) {
   this.moveVector[0] = Math.cos(this.object.rotation.y) * this.speed;
   this.moveVector[1] =  Math.sin(this.object.rotation.y) * this.speed;
 
 this.object.position.x -= this.moveVector[0];
 this.object.position.z -= this.moveVector[1];
+};
 
       this.rotationCount --;
       if(this.rotationCount <= 0) {
@@ -288,13 +327,100 @@ this.object.position.z -= this.moveVector[1];
       };
     },
     setter() {
-this.object.position.set(addedCam.position.x, addedCam.position.y, addedCam.position.z);
+this.object.position.set(addedCam.position.x, addedCam.position.y + 2, addedCam.position.z);
 this.object.rotation.set(0, Math.random()  * 3, 0);
+
+this.object.userData.onClick = () => {
+  if(addedCam.currentWeapon === " ") {
+  if(this.hp > 0) {
+  if(typeof this.d === "number" && this.d < 25) {
+    this.hp -= 25 + Math.floor(Math.random() * 16);
+  };
+} else {
+    this.object.visible = false;
+  this.object = undefined;
+
+};
+};
+//SAMPLE USAGE FOR THE BALLOON GUNY
+if(addedCam.currentWeapon === "Balloon_gun") {
+  if(cmbd === 0) {
+  this.pullingOn += 25;
+  if(this.pullingOn > this.mass + 1) {
+    this.flying = true;
+  };
+} else {
+  this.pullingOn -= 25;
+  if(this.pullingOn < this.mass +1) {
+    this.flying = false;
+    this.falling = true;
+  };
+};
+}
+//-----
+};
       world.add(this.object);
     }
   });
 };
 
+function keysFunc() {
+  if(cpk === "c" || cpk === "C") {
+    clonePlayer();
+  };
+  if(cpk === "i" || cpk === "I") {
+    addedCam.inventory = !addedCam.inventory;
+  };
+  if(cpk === "1") {
+    addedCam.currentWeapon = "Balloon_gun";
+  };
+};
+
+function ground() {
+  let rowCount = 0;
+  let oneRow = 50;
+  let current = 0;
+  let all = oneRow * oneRow;
+
+  for(let i = 0; i < all; i ++) {
+
+  objects.push(
+    {
+      thisX: current,
+      thisZ: rowCount,
+      object: new THREE.Mesh(
+        new THREE.BoxGeometry(7,0.01,7),
+     materials[0]
+    ), 
+    setCount: 0,
+    setter() {
+      let x = this.thisX;
+      let z = this.thisZ;
+        this.object.position.set(x * 7,2,z * 7);
+        world.add(this.object);
+    },
+    ff() {
+        if(addedCam.position.y < this.object.position.y) {
+            addedCam.position.y = 4;
+        };
+    },
+});
+  if(current < oneRow - 1) {
+    current ++;
+  } else {
+    current = 0;
+    rowCount ++;
+  };
+  };
+};
+
+
+function die() {
+  if(addedCam.hp <= 0) {
+    addedCam.position.set(0,98.1, 0);
+    addedCam.hp = 100;
+  };
+};
 //VARIABLES
 let c = document.createElement("canvas");
 const renderer = new THREE.WebGLRenderer();
@@ -309,33 +435,63 @@ c.height = renderer.domElement.height
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(c);
 const world = new THREE.Scene();
+c.style.position = "absolute"
+c.style.top = "95%"
+c.style.left = '50%'
+c.style.pointerEvents = "auto";
+c.style.zIndex = "10"
+c.style.transform = "translate(-50%, -95%)"
 const ctx = c.getContext("2d");
 let yaw = 0;
 let pitch = 0;
-let objects = [
-    {object: new THREE.Mesh(
-        new THREE.BoxGeometry(1000,0.00001,1000),
-        newMaterial("bas", "./dev.insertTexture.png")
-    ), ff() {
-      
-        if(addedCam.position.y < this.object.position.y) {
-            addedCam.position.y = 4;
-        };
-    },
-    fs: 0,
-    setCount: 0,
-    setter() {
-        this.object.position.set(0,0,0);
-        world.add(this.object);
-
-        this.object.userData.onClick = () => {
-            console.log("CLICKS WORK");
-        };
-    }
-},
+let materials = [
+  newMaterial("bas", "./dev.insertTexture.png"),  // 0
+  newMaterial("bas", "./stone.png"),              // 1
 ];
-let objects2d = [];
-let text = [];
+let objects = [
+{object: new THREE.Mesh(
+  new THREE.BoxGeometry(1.5,1.5,1.5),
+  materials[1]
+),
+friction: 0,
+mass: 5,
+grav: true,
+physics: true,
+collides: true,
+push: true,
+falling: true,
+impulse: 0,
+v: 0,
+setCount: 0,
+ff() {
+
+},
+setter() {
+  this.object.position.set(20,100,20);
+  world.add(this.object);
+}
+}
+];
+let objects2d = [
+  {x: -1000, y: (window.innerHeight - 365) / 2, sx: 365, sy: 365, c: "rgba(1,5,100, 0.6)", visible: true, ff() {
+if(addedCam.inventory === true) {
+  this.x = (window.innerWidth - 365) / 2;
+  renderer.domElement.exitPointerLock();
+} else {
+    this.x = -1000;
+  renderer.domElement.requestPointerLock();
+};
+
+  }},
+  {x: (window.innerWidth - 8) / 2, y: (window.innerHeight - 8) / 2, sx: 8, sy: 8, c: "black", visible: true, ff() {
+    if(addedCam.inventory === true) {
+      this.x = -1000;
+    } else {
+      this.x = (window.innerWidth - 8) / 2;
+    };
+  }}
+];
+
 let playerGravity = 0.981;
 let addedCamspeed = 1;
 let playerAcceleration = 0.3;
@@ -345,8 +501,12 @@ let cmbd = null;
 let sens = 0.01;
 let mx = 0;
 let my = 0;
+let friction_coefficient_forall = 0.35;
 let addedCamBehav = () => {};
-let addedCam = addPlayer(75, 1000, 70,  98.1, 70, {x:0,y:0,z:0}, 0.002, 0.01, 0.1);
+let addedCam = addPlayer(75, 1000, 0,  98.1, 0, {x:0,y:0,z:0}, 0.002, 0.01, 0.1);
+let text = [
+  {visible: true,type: "centeredx", t: addedCam.hp, c: "red", f: "35px Comic Sans MS", x: undefined, y: window.innerHeight - 37, ff() {this.t = addedCam.hp;}}
+];
 addedCamBehav = function() { 
 
   const dir = new THREE.Vector3();
@@ -357,6 +517,7 @@ addedCamBehav = function() {
       const right1 = new THREE.Vector3();
       right1.crossVectors(forward, addedCam.up).normalize();
       if (keys['w'] || keys["W"]) {
+         addedCam.impulse = addedCamspeed * addedCam.mass;
         if(keys["q"] || keys["Q"]) {
         addedCam.getWorldDirection(dir);
         dir.y = 0;
@@ -372,6 +533,7 @@ addedCamBehav = function() {
       
       };
       if (keys['s'] || keys["S"]) {
+         addedCam.impulse = addedCamspeed * addedCam.mass;
         if(keys["q"] || keys["Q"]) {
         addedCam.getWorldDirection(dir);
         dir.y = 0;
@@ -388,6 +550,7 @@ addedCamBehav = function() {
       const right = new THREE.Vector3();
       
       if (keys['a'] || keys["A"]) {
+         addedCam.impulse = addedCamspeed * addedCam.mass;
         addedCam.getWorldDirection(dir);
         dir.y = 0;
         dir.normalize();
@@ -398,6 +561,7 @@ addedCamBehav = function() {
       }
       
       if (keys['d'] || keys["D"]) {
+         addedCam.impulse = addedCamspeed * addedCam.mass;
           addedCam.getWorldDirection(dir);
         dir.y = 0;
         dir.normalize();
@@ -405,13 +569,21 @@ addedCamBehav = function() {
         addedCam.position.addScaledVector(right, addedCamspeed);
       } else {
       };
-     
-      if(addedCam.position.y > 4) {
+    if(!keys["d"] && !keys["D"] && !keys["a"] && !keys["A"] && !keys["s"] &&!keys["S"] && !keys["w"] && !keys["W"]) {
+       addedCam.impulse = 0;
+    };
+
+      if(addedCam.position.y > 5) {
       addedCam.position.y -= playerGravity;
     };
 };
 
 addedCam.rotation.order = "YXZ";
+addedCam.inventory = false;
+addedCam.hp = 100;
+addedCam.currentWeapon = " ";
+addedCam.impulse = 0;
+addedCam.mass = 75;
 
 const raycaster = new THREE.Raycaster();
 world.background = new THREE.Color(rgba(0,0,255,1));
@@ -483,12 +655,7 @@ window.addEventListener("mousemove", e => {
 window.addEventListener("keydown", e => {
     cpk = e.key;
     keys[e.key] = true;
-
-  if(cpk === "c" || cpk === "C") {
-    clonePlayer();
-  };
-
-
+    keysFunc();
 });
 
 window.addEventListener("keyup", e => {
@@ -499,10 +666,10 @@ window.addEventListener("keyup", e => {
 //INTERVALS/CALL FUNCTIONS
 setInterval(function() {
     objects.forEach((o) => {
-        if(typeof o === "object") {
-            if(typeof o.fs === "number") {
+        if(typeof o === "object") {  
+            if(typeof o.fs === "number" &&typeof o.falling === "boolean" && o.falling === true) {
                 o.fs += 1
-            };
+          };
         };
     });
     if(addedCam.position.y > 0) {
@@ -511,7 +678,7 @@ setInterval(function() {
         playerGravity = 1;
     };
     if(keys["w"] ||  keys["W"] || keys["s"] || keys["S"]) {
-        if(addedCamspeed < 4) {
+        if(addedCamspeed < 2) {
         addedCamspeed += playerAcceleration;
         };
     } else {
@@ -519,12 +686,13 @@ setInterval(function() {
     };
 }, 1000);
 
-
+ground();
 
 //LOOPS
 
 function main_render_loop() {
 //DO OTHER STUFFS
+ctx.clearRect(0,0,window.innerWidth, window.innerHeight);
 if(keys["ArrowUp"]) {
   sens += 0.001;
 };
@@ -537,29 +705,54 @@ if(keys["ArrowDown"]) {
     //3D objects
 for(let i = 0; i < objects.length; i++) {
 let o = objects[i];
-
-if(typeof o === "object") {
+o.d = calcDist(o.object, addedCam);
+if(typeof o === "object" && o.object !== undefined) {
+  if(typeof o.grav === "boolean") {
     cGrav(o);
+    if(o.d < 2) {
+    if(o.impulse > 100) {
+      addedCam.hp -= 50;
+    };
+    if(o.impulse > 200) {
+      addedCam.hp = 0;
+    };
+  };
+  };
 
+  if(typeof o.falling === "boolean" && o.falling === false && typeof o.physics === "boolean") {
+    if(typeof o.v === "number") {
+    o.impulse = o.v * o.mass;
+    };
+    if(typeof o.speed === "number") {
+      o.impulse = o.speed * o.mass;
+    };
+    o.friction = o.mass * friction_coefficient_forall;
+    if(typeof o.d === "number" && o.d < 1.5 && o.impulse > 350) {
+      addedCam.hp -= 50;
+    };
+  };
 if(typeof o.ff === "function") {
     o.ff();
 };
 if(typeof o.collides === "boolean") {
     collide(o, addedCam);
 };
+if(typeof o.push === "boolean") {
+  if(addedCam.impulse  > o.mass +1 + o.friction) {
+    push(o, addedCam);
+  };
+};
 if(typeof o.slimeBehav === "boolean") {
     slimeBehav(o,addedCam);
 };
-if(typeof o.push === "boolean") {
-    push(o, addedCam);
-};
-o.d = calcDist(o.object, addedCam);
+
 if(o.setCount < 1) {
   o.setCount ++;
 o.setter();
 };
 };
 };
+
   //render 3d
 
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -567,21 +760,23 @@ if(addedCam !== null) {
 renderer.render(world, addedCam);
 };
 
+
     //2D objects
 for(let i = 0; i < objects2d.length; i++) {
     let o = objects2d[i];
 
     if(typeof o === "object") {
-        if(typeof o.visible === "boolean" && o.visible === true) {
-
+      
             if(typeof o.ff === "function") {
                 o.ff();
             };
+        if(o.visible === true) {
+
             if(typeof o.img ==="undefined") {
-                if(typeof o.c === "string") {
+              if(typeof o.c === "string") {
                     ctx.fillStyle = o.c;
                     ctx.fillRect(o.x,o.y,o.sx,o.sy);
-                };
+              };           
             } else {
                 if(typeof o.rotation === "undefined") {
                     ctx.drawImage(o.img, o.x,o.y,o.sx,o.sy);
@@ -609,6 +804,9 @@ for(let i = 0; i < text.length; i++) {
 
     if(typeof t === "object") {
         if(typeof t.visible === "boolean" && t.visible === true) {
+          if(typeof t.ff === "function") {
+            t.ff();
+          };
             if(typeof t.c == "string" && typeof t.f ==="string") {
                 if(typeof t.type === "string") {
                     if(t.type === "allCenetered") {
@@ -628,7 +826,8 @@ for(let i = 0; i < text.length; i++) {
             };
         };
     };
-};
+  };
+  die();
 addedCamBehav();
     requestAnimationFrame(main_render_loop);
 };
