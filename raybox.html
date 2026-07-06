@@ -131,20 +131,27 @@ function loadVar(id, vari) {
 };
 
 
-const playerSize = new THREE.Vector3(1.5, 1.3, 0.6);
+const playerSize = new THREE.Vector3(1.5, 1.5, 0.6);
 const playerBB = new THREE.Box3();
 
 //COLLISION
  function collide(o, cam){
 const objBB = new THREE.Box3().setFromObject(o.object);
  playerBB.setFromCenterAndSize( cam.position, playerSize );
+  const dir = new THREE.Vector3();
+        const forward = new THREE.Vector3();
+      addedCam.getWorldDirection(forward);
+      forward.y = 0;
+      forward.normalize();
    
-  if(!playerBB.intersectsBox(objBB)) return;
-    if(cam.position.x <= o.object.position.x) cam.position.x -= addedCamspeed * 2;
-  if(cam.position.x >= o.object.position.x) cam.position.x += addedCamspeed * 2;
+  if(playerBB.intersectsBox(objBB)) {
 
-  if(cam.position.z <= o.object.position.z) cam.position.z -= addedCamspeed * 2;
-  if(cam.position.z >= o.object.position.z) cam.position.z += addedCamspeed * 2;
+ addedCam.getWorldDirection(dir);
+        dir.y = 0;
+        dir.normalize();
+        addedCam.position.addScaledVector(dir, -addedCamspeed);
+  };
+
  
 };
 
@@ -157,9 +164,14 @@ const objBB = new THREE.Box3().setFromObject(o.object);
  function push(o, cam){
 const objBB = new THREE.Box3().setFromObject(o.object);
  playerBB.setFromCenterAndSize( cam.position, playerSize );
+ const dir = new THREE.Vector3();
+        const forward = new THREE.Vector3();
+      addedCam.getWorldDirection(forward);
+      forward.y = 0;
+      forward.normalize();
 let timeout = 0;
 if(playerBB.intersectsBox(objBB)) {
- o.v = (addedCam.impulse - o.mass) - o.friction;
+ o.v = Math.max(0, (addedCam.impulse - o.friction) / o.mass);
 } else {
   timeout ++;
   if(timeout < 2) {
@@ -167,12 +179,14 @@ if(playerBB.intersectsBox(objBB)) {
   };
 };
 let v = o.v;
-  if(!playerBB.intersectsBox(objBB)) return;
-  if(cam.position.x <= o.object.position.x) o.object.position.x += v;
-  if(cam.position.x >= o.object.position.x) o.object.position.x -= v;
-  if(cam.position.z <= o.object.position.z) o.object.position.z += v;
-  if(cam.position.z >= o.object.position.z) o.object.position.z -= v;
-console.log(v);
+  if(playerBB.intersectsBox(objBB)) {
+  addedCam.getWorldDirection(dir);
+        dir.y = 0;
+        dir.normalize();
+        o.object.position.addScaledVector(dir, v);
+ 
+
+  };
 };
 
 
@@ -332,9 +346,9 @@ this.object.rotation.set(0, Math.random()  * 3, 0);
 
 this.object.userData.onClick = () => {
   if(addedCam.currentWeapon === " ") {
-  if(this.hp > 0) {
+  if(this.health > 0) {
   if(typeof this.d === "number" && this.d < 25) {
-    this.hp -= 25 + Math.floor(Math.random() * 16);
+    this.health -= 25 + Math.floor(Math.random() * 16);
   };
 } else {
     this.object.visible = false;
@@ -374,11 +388,17 @@ function keysFunc() {
   if(cpk === "1") {
     addedCam.currentWeapon = "Balloon_gun";
   };
+  if(cpk === "0") {
+    addedCam.currentWeapon = " ";
+  };
+  if(cpk === "2") {
+    addedCam.currentWeapon = "Antigrav_gun";
+  };
 };
 
 function ground() {
   let rowCount = 0;
-  let oneRow = 50;
+  let oneRow = 15;
   let current = 0;
   let all = oneRow * oneRow;
 
@@ -421,6 +441,87 @@ function die() {
     addedCam.hp = 100;
   };
 };
+
+function newAlien(x,y,z) {
+  let material = [
+newMaterial("bas", "./casualSoldierS.png"),
+newMaterial("bas", "./casualSoldierS.png"),
+newMaterial("bas", "./casualSoldierS.png"),
+newMaterial("bas", "./casualSoldierS.png"),
+newMaterial("bas", "./casualSoldierS.png"),
+newMaterial("bas", "./casualSoldier.png")
+  ];
+
+  objects.push({
+    object: new THREE.Mesh(
+      new THREE.BoxGeometry(1,2,1),
+      material
+    ),
+    grav: true,
+    falling: true,
+    flying: false,
+    physics: true, 
+    mass: 90,
+    speed: 0.275,
+    impulse: 0,
+    friction: 0,
+    moveVector: [0,0],
+    setCount: 0,
+    hp: 100,
+    targetX: addedCam.position.x,
+    targetZ: addedCam.position.z,
+    moving: true,
+    attackCD: 0,
+    ff() {
+      if(this.flying === false &&this.falling === false) {
+        this.targetX = addedCam.position.x;
+        this.targetZ = addedCam.position.z;
+this.object.rotation.y = Math.atan2(
+  this.object.position.x - addedCam.position.x,
+  this.object.position.z - addedCam.position.z
+);
+
+if(typeof this.d === "number" && this.d > 1.5 ) {
+  this.moving = true;
+if(this.object.position.x > this.targetX) this.object.position.x -= this.speed;
+if(this.object.position.x < this.targetX) this.object.position.x += this.speed;
+if(this.object.position.z > this.targetZ) this.object.position.z -= this.speed;
+if(this.object.position.z < this.targetZ) this.object.position.z += this.speed;
+};
+
+if(this.moving === true) {
+  this.speed = 0.275;
+} else {
+  this.speed = 0;
+};
+
+if(typeof this.d === "number" && this.d <= 1.5) {
+  this.moving = false;
+  this.attackCD ++;
+  if(this.attackCD > 60) {
+  addedCam.hp -= 25;
+  this.attackCD = 0;
+  };
+};
+};
+    },
+    setter() {
+this.object.position.set(x,y,z);
+world.add(this.object);
+
+this.object.userData.onClick = () => {
+  if(addedCam.currentWeapon === " ") {
+if(this.hp > 0) {
+  this.hp -= 25 + Math.floor(Math.random() *10);
+} else {
+  this.object.visible = false;
+  this.object = undefined;
+  this.d = undefined;
+};
+  };
+    }
+  }});
+};
 //VARIABLES
 let c = document.createElement("canvas");
 const renderer = new THREE.WebGLRenderer();
@@ -445,32 +546,12 @@ const ctx = c.getContext("2d");
 let yaw = 0;
 let pitch = 0;
 let materials = [
-  newMaterial("bas", "./dev.insertTexture.png"),  // 0
-  newMaterial("bas", "./stone.png"),              // 1
+  newMaterial("bas", "./HHgrass.png"),  // 0
+  newMaterial("bas", "./stone.png"),    // 1
+  newMaterial("bas", "./wall.png")      // 2
 ];
 let objects = [
-{object: new THREE.Mesh(
-  new THREE.BoxGeometry(1.5,1.5,1.5),
-  materials[1]
-),
-friction: 0,
-mass: 5,
-grav: true,
-physics: true,
-collides: true,
-push: true,
-falling: true,
-impulse: 0,
-v: 0,
-setCount: 0,
-ff() {
 
-},
-setter() {
-  this.object.position.set(20,100,20);
-  world.add(this.object);
-}
-}
 ];
 let objects2d = [
   {x: -1000, y: (window.innerHeight - 365) / 2, sx: 365, sy: 365, c: "rgba(1,5,100, 0.6)", visible: true, ff() {
@@ -493,41 +574,31 @@ if(addedCam.inventory === true) {
 ];
 
 let playerGravity = 0.981;
-let addedCamspeed = 1;
-let playerAcceleration = 0.3;
+let addedCamspeed = 0.1;
+let playerAcceleration = 0.1;
 let keys = [];
 let cpk = null;
 let cmbd = null;
 let sens = 0.01;
+let startUp = 0;
 let mx = 0;
 let my = 0;
 let friction_coefficient_forall = 0.35;
 let addedCamBehav = () => {};
-let addedCam = addPlayer(75, 1000, 0,  98.1, 0, {x:0,y:0,z:0}, 0.002, 0.01, 0.1);
+let addedCam = addPlayer(75, 1000, 7 * 7.5,  98.1,  7 * 7.5, {x:0,y:0,z:0}, 0.002, 0.01, 0.1);
 let text = [
   {visible: true,type: "centeredx", t: addedCam.hp, c: "red", f: "35px Comic Sans MS", x: undefined, y: window.innerHeight - 37, ff() {this.t = addedCam.hp;}}
 ];
 addedCamBehav = function() { 
 
-  const dir = new THREE.Vector3();
-        const forward = new THREE.Vector3();
-      addedCam.getWorldDirection(forward);
-      forward.y = 0;
-      forward.normalize();
-      const right1 = new THREE.Vector3();
-      right1.crossVectors(forward, addedCam.up).normalize();
       if (keys['w'] || keys["W"]) {
          addedCam.impulse = addedCamspeed * addedCam.mass;
         if(keys["q"] || keys["Q"]) {
-        addedCam.getWorldDirection(dir);
-        dir.y = 0;
-        dir.normalize();
-        addedCam.position.addScaledVector(dir, addedCamspeed * 2)
+       
         } else {
-        addedCam.getWorldDirection(dir);
-        dir.y = 0;
-        dir.normalize();
-        addedCam.position.addScaledVector(dir, addedCamspeed);
+       
+        addedCam.position.x -= addedCam.directionVector[0] * addedCamspeed;
+        addedCam.position.z -= addedCam.directionVector[2] * addedCamspeed;
         }
       } else {
       
@@ -535,38 +606,28 @@ addedCamBehav = function() {
       if (keys['s'] || keys["S"]) {
          addedCam.impulse = addedCamspeed * addedCam.mass;
         if(keys["q"] || keys["Q"]) {
-        addedCam.getWorldDirection(dir);
-        dir.y = 0;
-        dir.normalize();
-        addedCam.position.addScaledVector(dir, -addedCamspeed * 2)
+      
         } else {
-        addedCam.getWorldDirection(dir);
-        dir.y = 0;
-        dir.normalize();
-        addedCam.position.addScaledVector(dir, -addedCamspeed);
+addedCam.position.x += addedCam.directionVector[0] * addedCamspeed;
+        addedCam.position.z += addedCam.directionVector[2] * addedCamspeed;
         }
       } else {
       }
-      const right = new THREE.Vector3();
+     
       
       if (keys['a'] || keys["A"]) {
          addedCam.impulse = addedCamspeed * addedCam.mass;
-        addedCam.getWorldDirection(dir);
-        dir.y = 0;
-        dir.normalize();
-        right.crossVectors(addedCam.up, dir).normalize();
-        addedCam.position.addScaledVector(right, addedCamspeed);
+       addedCam.position.x += -addedCam.directionVector[2] * addedCamspeed;
+        addedCam.position.z += -addedCam.directionVector[1] *addedCamspeed;
       } else {
       
       }
       
       if (keys['d'] || keys["D"]) {
          addedCam.impulse = addedCamspeed * addedCam.mass;
-          addedCam.getWorldDirection(dir);
-        dir.y = 0;
-        dir.normalize();
-        right.crossVectors(dir, addedCam.up).normalize();
-        addedCam.position.addScaledVector(right, addedCamspeed);
+     
+addedCam.position.x += addedCam.directionVector[2] * addedCamspeed;
+        addedCam.position.z += addedCam.directionVector[1] * addedCamspeed;
       } else {
       };
     if(!keys["d"] && !keys["D"] && !keys["a"] && !keys["A"] && !keys["s"] &&!keys["S"] && !keys["w"] && !keys["W"]) {
@@ -584,6 +645,7 @@ addedCam.hp = 100;
 addedCam.currentWeapon = " ";
 addedCam.impulse = 0;
 addedCam.mass = 75;
+addedCam.directionVector = [0,0,0];
 
 const raycaster = new THREE.Raycaster();
 world.background = new THREE.Color(rgba(0,0,255,1));
@@ -592,8 +654,9 @@ world.background = new THREE.Color(rgba(0,0,255,1));
 //EVENTLISTENERS
 window.addEventListener("mousedown", e => {
 cmbd = e.button;
-if(!document.pointerLockElement) {
+if(startUp < 1) {
     renderer.domElement.requestPointerLock();
+    startUp ++;
 };
     for(let i = 0; i < objects2d.length; i++) {
         let o = objects2d[i];
@@ -629,6 +692,9 @@ const meshes = [];
 
   if(hits.length){
     hits[0].object.userData.onClick?.();
+   if(typeof o.canGrab === "boolean" && addedCam.currentWeapon === "Antigrav_gun") {
+    o.canGrab = true;
+   };
   };
 };
 }
@@ -636,6 +702,13 @@ const meshes = [];
 
 window.addEventListener("mouseup", e => {
     cmbd = null;
+    for(let i = 0; i < objects.length; i++) {
+      let o = objects[i];
+
+         if(typeof o.canGrab === "boolean" && addedCam.currentWeapon === "Antigrav_gun") {
+    o.canGrab = false;
+   };
+    };
 });
   
 
@@ -649,7 +722,33 @@ window.addEventListener("mousemove", e => {
   pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch));
   addedCam.rotation.set(pitch, yaw, 0);
 
+
    };
+
+for(let i = 0; i < objects.length; i++) {
+  let o = objects[i];
+  if(typeof o.canGrab === "boolean" && o.canGrab === true && addedCam.currentWeapon === "Antigrav_gun") {
+    /*LATER FORMULA FOR RANDOM MOVEMENT GUN
+    vector[0] = Math.cos(addedCam.rotation.y);
+    vector[2] = Math.sin(addedCam.rotation.y);
+      o.object.position.x -= vector[0];
+      o.object.position.z -= vector[2];
+      */    
+     let vx;
+     let vy;
+     let vz;
+
+
+vx =-addedCam.directionVector[0];
+vy = addedCam.directionVector[1];
+vz = -addedCam.directionVector[2];
+     
+      o.object.position.set((vx + addedCam.position.x) ,  (vy + addedCam.position.y), (vz+addedCam.position.z));
+      console.log(o.object.position);
+
+    };
+};
+
 });
 
 window.addEventListener("keydown", e => {
@@ -678,11 +777,11 @@ setInterval(function() {
         playerGravity = 1;
     };
     if(keys["w"] ||  keys["W"] || keys["s"] || keys["S"]) {
-        if(addedCamspeed < 2) {
+        if(addedCamspeed < 0.6) {
         addedCamspeed += playerAcceleration;
         };
     } else {
-       addedCamspeed = 0.5;
+       addedCamspeed = 0.1;
     };
 }, 1000);
 
@@ -705,8 +804,9 @@ if(keys["ArrowDown"]) {
     //3D objects
 for(let i = 0; i < objects.length; i++) {
 let o = objects[i];
-o.d = calcDist(o.object, addedCam);
+
 if(typeof o === "object" && o.object !== undefined) {
+  o.d = calcDist(o.object, addedCam);
   if(typeof o.grav === "boolean") {
     cGrav(o);
     if(o.d < 2) {
@@ -719,6 +819,8 @@ if(typeof o === "object" && o.object !== undefined) {
   };
   };
 
+  
+
   if(typeof o.falling === "boolean" && o.falling === false && typeof o.physics === "boolean") {
     if(typeof o.v === "number") {
     o.impulse = o.v * o.mass;
@@ -728,18 +830,23 @@ if(typeof o === "object" && o.object !== undefined) {
     };
     o.friction = o.mass * friction_coefficient_forall;
     if(typeof o.d === "number" && o.d < 1.5 && o.impulse > 350) {
+      if(typeof o.deadly === "boolean") {
       addedCam.hp -= 50;
+      };
     };
   };
 if(typeof o.ff === "function") {
     o.ff();
 };
-if(typeof o.collides === "boolean") {
+if(typeof o.collides === "boolean" && typeof o.push == "undefined") {
     collide(o, addedCam);
 };
-if(typeof o.push === "boolean") {
+if(typeof o.push === "boolean" &&typeof o.collides === "boolean") {
   if(addedCam.impulse  > o.mass +1 + o.friction) {
     push(o, addedCam);
+    console.log("runs");
+  } else {
+collide(o,addedCam);
   };
 };
 if(typeof o.slimeBehav === "boolean") {
@@ -828,10 +935,140 @@ for(let i = 0; i < text.length; i++) {
     };
   };
   die();
+addedCam.directionVector[0] = Math.sin(addedCam.rotation.y);
+addedCam.directionVector[1] = Math.sin(addedCam.rotation.x);
+addedCam.directionVector[2] = Math.cos(addedCam.rotation.y);
+
 addedCamBehav();
     requestAnimationFrame(main_render_loop);
 };
 
 main_render_loop();
+
+//ADD ALL OBJECTS
+
+objects.push(
+  {object: new THREE.Mesh(
+  new THREE.BoxGeometry(1,1,1),
+  materials[1]
+),
+friction: 0,
+mass: 75,
+grav: true,
+physics: true,
+collides: true,
+push: true,
+pullingOn: 0,
+flying: false,
+falling: true,
+canBalloon: true,
+impulse: 0,
+canGrab:false,
+v: 0,
+setCount: 0,
+ff() {
+      if(this.flying === true) {
+  this.object.position.y += (this.pullingOn - this.mass) / 10000;
+};
+console.log((this.pullingOn - this.mass) / 100);
+},
+setter() {
+  this.object.position.set(20,1000,20);
+  world.add(this.object);
+const pullValue = 25;
+  this.object.userData.onClick = () => {
+    if(addedCam.currentWeapon === "Balloon_gun") {
+  if(cmbd === 0) {
+  this.pullingOn += pullValue;
+  if(this.pullingOn > this.mass + 1) {
+    this.flying = true;
+  };
+} else {
+  this.pullingOn -= pullValue;
+  if(this.pullingOn < this.mass +1) {
+    this.flying = false;
+    this.falling = true;
+  };
+};
+}
+  };
+}
+});
+
+for(let i = 0; i < Math.floor((7 * 15) / 6); i ++) {
+
+objects.push({
+  object: new THREE.Mesh(
+    new THREE.BoxGeometry(6.5, 5, 1),
+    materials[2]
+  ),
+  collides: true,
+  mass: 10000,
+  setCount: 0,
+  setter() {
+    this.object.position.set(i * 6.5, 1 + (6.5 /2),  - 3.5);
+
+    world.add(this.object);
+  }
+});
+
+};
+
+for(let i = 0; i < Math.floor((7 * 15) / 6); i ++) {
+
+objects.push({
+  object: new THREE.Mesh(
+    new THREE.BoxGeometry(6.5, 5, 1),
+    materials[2]
+  ),
+  collides: true,
+  mass: 10000,
+  setCount: 0,
+  setter() {
+    this.object.position.set(i * 6.5, 1 + (6.5 /2),  - 3.5 + 15 * 7);
+
+    world.add(this.object);
+  }
+});
+
+};
+
+for(let i = 0; i < Math.floor((7 * 15) / 6); i ++) {
+
+objects.push({
+  object: new THREE.Mesh(
+    new THREE.BoxGeometry(1, 5, 6.5),
+    materials[2]
+  ),
+  collides: true,
+  mass: 10000,
+  setCount: 0,
+  setter() {
+    this.object.position.set(-3.5, 1 + (6.5 /2),  i * 6.5);
+
+    world.add(this.object);
+  }
+});
+
+};
+
+for(let i = 0; i < Math.floor((7 * 15) / 6); i ++) {
+
+objects.push({
+  object: new THREE.Mesh(
+    new THREE.BoxGeometry(1, 5, 6.5),
+    materials[2]
+  ),
+  collides: true,
+  mass: 10000,
+  setCount: 0,
+  setter() {
+    this.object.position.set(-3.5 + 7 * 15, 1 + (6.5 /2),  i * 6.5);
+
+    world.add(this.object);
+  }
+});
+
+};
         </script>
 </html>
