@@ -146,10 +146,8 @@ const objBB = new THREE.Box3().setFromObject(o.object);
    
   if(playerBB.intersectsBox(objBB)) {
 
- addedCam.getWorldDirection(dir);
-        dir.y = 0;
-        dir.normalize();
-        addedCam.position.addScaledVector(dir, -addedCamspeed);
+addedCam.position.x += addedCam.directionVector[0] * addedCamspeed;
+addedCam.position.x += addedCam.directionVector[2] * addedCamspeed;
   };
 
  
@@ -180,11 +178,10 @@ if(playerBB.intersectsBox(objBB)) {
 };
 let v = o.v;
   if(playerBB.intersectsBox(objBB)) {
-  addedCam.getWorldDirection(dir);
-        dir.y = 0;
-        dir.normalize();
-        o.object.position.addScaledVector(dir, v);
- 
+       
+ o.object.position.x -= addedCam.directionVector[0] * v;
+  o.object.position.z -= addedCam.directionVector[2] * v;
+
 
   };
 };
@@ -383,7 +380,14 @@ function keysFunc() {
     clonePlayer();
   };
   if(cpk === "i" || cpk === "I") {
-    addedCam.inventory = !addedCam.inventory;
+     addedCam.inventory = !addedCam.inventory;
+    if(addedCam.inventory === true) {
+       document.exitPointerLock();
+   
+    } else {
+     document.requestPointerLock();
+    };
+   
   };
   if(cpk === "1") {
     addedCam.currentWeapon = "Balloon_gun";
@@ -393,6 +397,16 @@ function keysFunc() {
   };
   if(cpk === "2") {
     addedCam.currentWeapon = "Antigrav_gun";
+  };
+  if(cpk === "v" ||cpk === "V") {
+    addedCam.flying = !addedCam.flying;
+  };
+  if(cpk === "r" ||cpk === "R") {
+    let addedBullets = 6 - addedCam.bullets_in_mag;
+    addedCam.bullets_in_mag += addedBullets;
+    addedCam.bullets -= addedBullets;
+    addedCam.canShoot = false;
+    setTimeout(function() {addedCam.canShoot = true;}, 3000);
   };
 };
 
@@ -443,19 +457,10 @@ function die() {
 };
 
 function newAlien(x,y,z) {
-  let material = [
-newMaterial("bas", "./casualSoldierS.png"),
-newMaterial("bas", "./casualSoldierS.png"),
-newMaterial("bas", "./casualSoldierS.png"),
-newMaterial("bas", "./casualSoldierS.png"),
-newMaterial("bas", "./casualSoldierS.png"),
-newMaterial("bas", "./casualSoldier.png")
-  ];
-
-  objects.push({
+ let creature = {
     object: new THREE.Mesh(
       new THREE.BoxGeometry(1,2,1),
-      material
+      materials[4]
     ),
     grav: true,
     falling: true,
@@ -473,7 +478,7 @@ newMaterial("bas", "./casualSoldier.png")
     moving: true,
     attackCD: 0,
     ff() {
-      if(this.flying === false &&this.falling === false) {
+      if(this.flying === false && this.falling === false) {
         this.targetX = addedCam.position.x;
         this.targetZ = addedCam.position.z;
 this.object.rotation.y = Math.atan2(
@@ -481,13 +486,15 @@ this.object.rotation.y = Math.atan2(
   this.object.position.z - addedCam.position.z
 );
 
-if(typeof this.d === "number" && this.d > 1.5 ) {
+if(typeof this.d === "number" && this.d > 1.5 && this.d <  45) {
   this.moving = true;
 if(this.object.position.x > this.targetX) this.object.position.x -= this.speed;
 if(this.object.position.x < this.targetX) this.object.position.x += this.speed;
 if(this.object.position.z > this.targetZ) this.object.position.z -= this.speed;
 if(this.object.position.z < this.targetZ) this.object.position.z += this.speed;
 };
+
+
 
 if(this.moving === true) {
   this.speed = 0.275;
@@ -512,7 +519,7 @@ world.add(this.object);
 this.object.userData.onClick = () => {
   if(addedCam.currentWeapon === " ") {
 if(this.hp > 0) {
-  this.hp -= 25 + Math.floor(Math.random() *10);
+  this.hp -= 25 + Math.floor(Math.random() * 10);
 } else {
   this.object.visible = false;
   this.object = undefined;
@@ -520,8 +527,16 @@ if(this.hp > 0) {
 };
   };
     }
-  }});
+  }};
+
+  objects.push(creature);
 };
+
+
+function newObject(what) {
+objects.push(what);
+};
+
 //VARIABLES
 let c = document.createElement("canvas");
 const renderer = new THREE.WebGLRenderer();
@@ -548,23 +563,57 @@ let pitch = 0;
 let materials = [
   newMaterial("bas", "./HHgrass.png"),  // 0
   newMaterial("bas", "./stone.png"),    // 1
-  newMaterial("bas", "./wall.png")      // 2
+  newMaterial("bas", "./wall.png"),      // 2
+  [
+    newMaterial("bas", "./lift_button_01.png"),
+    newMaterial("bas", "./shpbg.png"),
+        newMaterial("bas", "./shpbg.png"),
+            newMaterial("bas", "./shpbg.png"),
+                newMaterial("bas", "./shpbg.png"),
+                    newMaterial("bas", "./shpbg.png"),
+  ], // 3
+  [
+newMaterial("bas", "./casualSoldierS.png"),
+newMaterial("bas", "./casualSoldierS.png"),
+newMaterial("bas", "./casualSoldierS.png"),
+newMaterial("bas", "./casualSoldierS.png"),
+newMaterial("bas", "./casualSoldierS.png"),
+newMaterial("bas", "./casualSoldier.png")
+  ], // 4
+  newMaterial("bas", "./bullet.png") // 5
 ];
 let objects = [
+{
+object: new THREE.Mesh(
+  new THREE.BoxGeometry(0.2, 0.75, 0.5),
+  materials[3]
+),
+setCount: 0,
+canGrab: 10,
+ff() {
+ 
+},
+setter() {
+  this.object.position.set(5,3.5,5);
+  this.object.rotation.y = (2 * Math.PI) / 4;
 
+  this.object.userData.onClick = () => {
+       spawning = !spawning;
+  };
+  world.add(this.object);
+}
+}
 ];
 let objects2d = [
   {x: -1000, y: (window.innerHeight - 365) / 2, sx: 365, sy: 365, c: "rgba(1,5,100, 0.6)", visible: true, ff() {
 if(addedCam.inventory === true) {
   this.x = (window.innerWidth - 365) / 2;
-  renderer.domElement.exitPointerLock();
 } else {
     this.x = -1000;
-  renderer.domElement.requestPointerLock();
 };
 
   }},
-  {x: (window.innerWidth - 8) / 2, y: (window.innerHeight - 8) / 2, sx: 8, sy: 8, c: "black", visible: true, ff() {
+  {x: (window.innerWidth - 4) / 2, y: (window.innerHeight - 4) / 2, sx: 4, sy: 4, c: "black", visible: true, ff() {
     if(addedCam.inventory === true) {
       this.x = -1000;
     } else {
@@ -572,6 +621,10 @@ if(addedCam.inventory === true) {
     };
   }}
 ];
+
+let object_instances = {
+
+};
 
 let playerGravity = 0.981;
 let addedCamspeed = 0.1;
@@ -582,27 +635,34 @@ let cmbd = null;
 let sens = 0.01;
 let startUp = 0;
 let mx = 0;
+let x;
+let y;
+let z;
+let spawning = false;
 let my = 0;
+let current = [0,0,0];
+let d = 3.5;
 let friction_coefficient_forall = 0.35;
+let airResistance = 0.5;
+let releaseMethod = false;
 let addedCamBehav = () => {};
 let addedCam = addPlayer(75, 1000, 7 * 7.5,  98.1,  7 * 7.5, {x:0,y:0,z:0}, 0.002, 0.01, 0.1);
 let text = [
-  {visible: true,type: "centeredx", t: addedCam.hp, c: "red", f: "35px Comic Sans MS", x: undefined, y: window.innerHeight - 37, ff() {this.t = addedCam.hp;}}
+  {visible: true,type: "centeredx", t: addedCam.hp, c: "red", f: "35px Comic Sans MS", x: undefined, y: window.innerHeight - 37, ff() {this.t = addedCam.hp;}},
+    {visible: true,type: "none", t: "6 / " + addedCam.bullets_in_mag, c: "blue", f: "35px Comic Sans MS", x: 0, y: window.innerHeight - 37, ff() {this.t = "6 / " + addedCam.bullets_in_mag; if(addedCam.currentWeapon === " ") {this.visible = true;} else {this.visible = false;};}}
 ];
 addedCamBehav = function() { 
-
+if(addedCam.flying === false) {
       if (keys['w'] || keys["W"]) {
          addedCam.impulse = addedCamspeed * addedCam.mass;
         if(keys["q"] || keys["Q"]) {
-       
+      
         } else {
-       
-        addedCam.position.x -= addedCam.directionVector[0] * addedCamspeed;
+addedCam.position.x -= addedCam.directionVector[0] * addedCamspeed;
         addedCam.position.z -= addedCam.directionVector[2] * addedCamspeed;
         }
       } else {
-      
-      };
+      }
       if (keys['s'] || keys["S"]) {
          addedCam.impulse = addedCamspeed * addedCam.mass;
         if(keys["q"] || keys["Q"]) {
@@ -617,26 +677,39 @@ addedCam.position.x += addedCam.directionVector[0] * addedCamspeed;
       
       if (keys['a'] || keys["A"]) {
          addedCam.impulse = addedCamspeed * addedCam.mass;
-       addedCam.position.x += -addedCam.directionVector[2] * addedCamspeed;
-        addedCam.position.z += -addedCam.directionVector[1] *addedCamspeed;
+
       } else {
       
       }
       
       if (keys['d'] || keys["D"]) {
          addedCam.impulse = addedCamspeed * addedCam.mass;
-     
-addedCam.position.x += addedCam.directionVector[2] * addedCamspeed;
-        addedCam.position.z += addedCam.directionVector[1] * addedCamspeed;
+
+
       } else {
       };
+    } else {
+   if (keys['w'] || keys["W"]) {
+         addedCam.impulse = addedCamspeed * addedCam.mass;          
+addedCam.position.x -= addedCam.directionVector[0] * addedCamspeed;
+addedCam.position.z -= addedCam.directionVector[2] * addedCamspeed;
+addedCam.position.y += addedCam.directionVector[1] * addedCamspeed;
+      };
+  if (keys['s'] || keys["S"]) {
+         addedCam.impulse = addedCamspeed * addedCam.mass;          
+addedCam.position.x -= -addedCam.directionVector[0] * addedCamspeed;
+addedCam.position.z -= -addedCam.directionVector[2] * addedCamspeed;
+addedCam.position.y += -addedCam.directionVector[1] * addedCamspeed;
+      };
+    };
     if(!keys["d"] && !keys["D"] && !keys["a"] && !keys["A"] && !keys["s"] &&!keys["S"] && !keys["w"] && !keys["W"]) {
        addedCam.impulse = 0;
     };
-
+if(addedCam.flying === false) {
       if(addedCam.position.y > 5) {
       addedCam.position.y -= playerGravity;
     };
+  };
 };
 
 addedCam.rotation.order = "YXZ";
@@ -646,6 +719,10 @@ addedCam.currentWeapon = " ";
 addedCam.impulse = 0;
 addedCam.mass = 75;
 addedCam.directionVector = [0,0,0];
+addedCam.flying = false;
+addedCam.bullets = 6 * Math.pow(10,23);
+addedCam.bullets_in_mag = 6;
+addedCam.canShoot = true;
 
 const raycaster = new THREE.Raycaster();
 world.background = new THREE.Color(rgba(0,0,255,1));
@@ -654,10 +731,54 @@ world.background = new THREE.Color(rgba(0,0,255,1));
 //EVENTLISTENERS
 window.addEventListener("mousedown", e => {
 cmbd = e.button;
-if(startUp < 1) {
-    renderer.domElement.requestPointerLock();
-    startUp ++;
+
+if(addedCam.currentWeapon === " ") {
+if(addedCam.bullets_in_mag > 0) {
+  if(addedCam.canShoot === true) {
+  addedCam.bullets_in_mag --;
+
+objects.push({
+  object: new THREE.Mesh(
+    new THREE.BoxGeometry(0.2,0.2,0.2),
+materials[5]
+  ),
+  setCount: 0,
+  tx: addedCam.directionVector[0],
+  ty: addedCam.directionVector[1],
+  tz: addedCam.directionVector[2],
+  setter() {
+    this.object.position.set(addedCam.position.x, addedCam.position.y, addedCam.position.z);
+    world.add(this.object);
+
+  this.ff = () => {
+this.object.position.x -= this.tx * 2;
+this.object.position.y += this.ty * 2;
+this.object.position.z -= this.tz * 2;
+
+if(typeof this.d === "number" && this.d > 300) {
+  this.object.visible = false;
+  this.object = undefined;
 };
+
+  };
+  }
+});
+
+  };
+} else {
+  addedCam.canShoot = false;
+  setTimeout(function() {
+    addedCam.bullets_in_mag = 6;
+    addedCam.bullets -= 6;
+    addedCam.canShoot = true;
+  }, 3000);
+};
+};
+
+if(addedCam.inventory === false) {
+  renderer.domElement.requestPointerLock();
+};
+
     for(let i = 0; i < objects2d.length; i++) {
         let o = objects2d[i];
 
@@ -682,7 +803,7 @@ const meshes = [];
     if(o.object && o.object.parent){
       meshes.push(o.object);
     };
-    if(o.onMD) {
+    if(typeof o.onMD === "function") {
     o.onMD();
     };
   
@@ -692,9 +813,7 @@ const meshes = [];
 
   if(hits.length){
     hits[0].object.userData.onClick?.();
-   if(typeof o.canGrab === "boolean" && addedCam.currentWeapon === "Antigrav_gun") {
-    o.canGrab = true;
-   };
+  
   };
 };
 }
@@ -707,6 +826,11 @@ window.addEventListener("mouseup", e => {
 
          if(typeof o.canGrab === "boolean" && addedCam.currentWeapon === "Antigrav_gun") {
     o.canGrab = false;
+    if(typeof o.grav === "boolean") {
+      o.falling = true;
+    };
+    current = addedCam.directionVector;
+   releaseMethod = true;
    };
     };
 });
@@ -737,19 +861,22 @@ for(let i = 0; i < objects.length; i++) {
      let vx;
      let vy;
      let vz;
-
-
-vx =-addedCam.directionVector[0];
-vy = addedCam.directionVector[1];
-vz = -addedCam.directionVector[2];
+vx = -addedCam.directionVector[0] * d;
+vy =  addedCam.directionVector[1] * d;
+vz = -addedCam.directionVector[2] * d;
      
       o.object.position.set((vx + addedCam.position.x) ,  (vy + addedCam.position.y), (vz+addedCam.position.z));
-      console.log(o.object.position);
 
+      if(typeof o.v === "number") {
+        o.v = (o.mass * 1.5 + e.movementX + e.movementY) / o.mass;
+      };
+    } else {
     };
-};
+     };
 
-});
+
+
+    });
 
 window.addEventListener("keydown", e => {
     cpk = e.key;
@@ -767,23 +894,29 @@ setInterval(function() {
     objects.forEach((o) => {
         if(typeof o === "object") {  
             if(typeof o.fs === "number" &&typeof o.falling === "boolean" && o.falling === true) {
-                o.fs += 1
+                o.fs += (1.5 / 100);
           };
         };
     });
-    if(addedCam.position.y > 0) {
-        playerGravity += 1
+    if(addedCam.position.y > 5) {
+        playerGravity += (1.5 / 100);
     } else {
         playerGravity = 1;
     };
     if(keys["w"] ||  keys["W"] || keys["s"] || keys["S"]) {
         if(addedCamspeed < 0.6) {
-        addedCamspeed += playerAcceleration;
+        addedCamspeed += (playerAcceleration / 100);
         };
     } else {
        addedCamspeed = 0.1;
     };
-}, 1000);
+}, 1);
+
+setInterval(function() {
+  if(spawning === true) {
+  newAlien(5,5,40);
+  };
+}, 7500)
 
 ground();
 
@@ -801,6 +934,18 @@ if(keys["ArrowDown"]) {
 };
 };
     
+if(keys["f"] || keys["F"]) {
+  if(d < 15) {
+  d += 0.5;
+  };
+};
+
+if(keys["g"] || keys["G"]) {
+  if(d > 1.5) {
+  d -= 0.5;
+  };
+};
+
     //3D objects
 for(let i = 0; i < objects.length; i++) {
 let o = objects[i];
@@ -828,7 +973,7 @@ if(typeof o === "object" && o.object !== undefined) {
     if(typeof o.speed === "number") {
       o.impulse = o.speed * o.mass;
     };
-    o.friction = o.mass * friction_coefficient_forall;
+    o.friction = (o.mass * 1.5) * friction_coefficient_forall;
     if(typeof o.d === "number" && o.d < 1.5 && o.impulse > 350) {
       if(typeof o.deadly === "boolean") {
       addedCam.hp -= 50;
@@ -837,6 +982,40 @@ if(typeof o === "object" && o.object !== undefined) {
   };
 if(typeof o.ff === "function") {
     o.ff();
+};
+if(releaseMethod === true && typeof o.canGrab === "boolean") {
+  let x = 0;
+   if(typeof o.v === "number") {
+    o.object.position.x -= current[0] * o.v;
+    o.object.position.z -= current[2] * o.v;
+  
+
+
+    if(o.v <= 0) {
+         x ++;
+    if(x < 2) {
+      o.speed = 0;
+      o.impulse = 0;
+    };
+      releaseMethod = false;
+    } else {
+        o.v -= airResistance;
+    };
+    };
+        if(typeof o.speed === "number") {
+    o.object.position.x -= current[0] * o.speed;
+    o.object.position.z -= current[2] * o.speed;
+   if(o.speed <= 0) {
+    x ++;
+    if(x < 2) {
+      o.speed = 0;
+      o.impulse = 0;
+    };
+    releaseMethod = false;
+   } else {
+     o.speed -= airResistance;
+   };
+    };
 };
 if(typeof o.collides === "boolean" && typeof o.push == "undefined") {
     collide(o, addedCam);
@@ -934,11 +1113,15 @@ for(let i = 0; i < text.length; i++) {
         };
     };
   };
+
   die();
 addedCam.directionVector[0] = Math.sin(addedCam.rotation.y);
 addedCam.directionVector[1] = Math.sin(addedCam.rotation.x);
 addedCam.directionVector[2] = Math.cos(addedCam.rotation.y);
-
+x = addedCam.directionVector[0] * d;
+y = addedCam.directionVector[1] * d;
+z = addedCam.directionVector[2] * d;
+ 
 addedCamBehav();
     requestAnimationFrame(main_render_loop);
 };
@@ -953,7 +1136,7 @@ objects.push(
   materials[1]
 ),
 friction: 0,
-mass: 75,
+mass: 5,
 grav: true,
 physics: true,
 collides: true,
@@ -970,13 +1153,18 @@ ff() {
       if(this.flying === true) {
   this.object.position.y += (this.pullingOn - this.mass) / 10000;
 };
-console.log((this.pullingOn - this.mass) / 100);
+console.log(this.impulse);
 },
 setter() {
   this.object.position.set(20,1000,20);
   world.add(this.object);
 const pullValue = 25;
   this.object.userData.onClick = () => {
+    if(addedCam.currentWeapon === "Antigrav_gun") {
+       if(typeof this.canGrab === "boolean" && addedCam.currentWeapon === "Antigrav_gun") {
+    this.canGrab = true;
+   };
+    };
     if(addedCam.currentWeapon === "Balloon_gun") {
   if(cmbd === 0) {
   this.pullingOn += pullValue;
@@ -1070,5 +1258,9 @@ objects.push({
 });
 
 };
+
+
+
+
         </script>
 </html>
