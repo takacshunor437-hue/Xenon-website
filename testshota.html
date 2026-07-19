@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+
+<html>
+    <title>3Delta testshoota'</title>
+    <body></body>
+    <script>
+
+//FUNCTIONS
+
+
+function cd(x,y) {
+    let dx = x.orgX - y.x;
+    let dz = x.orgZ - y.z;
+
+    return Math.sqrt(dx * dx + dz * dz);
+};
+
+function cube(sx,sy, sz, x,y,z, col, visible, ff) {
+let vertices = [
+    {x: x, y: y, z: z},
+    {x: x + sx, y: y, z: z},
+    {x: x, y: y, z: z + sz},
+    {x: x + sx, y: y, z: z + sz},
+    {x: x, y: y + sy, z: z},
+    {x: x + sx, y: y + sy, z: z},
+    {x: x, y: y + sy, z: z + sz},
+    {x: x + sx, y: y + sy, z: z + sz}
+];
+
+let c = {points: vertices, orgsx: sx, rff: ff,orgsy: sy, orgsz:sz, orgX: x, orgY: y, orgZ: z, sx: sx, sy: sy, sz: sz, x:x,y:y,z:z,c:col, visible: visible, ff() {
+    this.points = [
+    {x: this.orgX, y: this.orgY, z: this.orgZ},
+    {x: this.orgX + this.orgsx, y: this.orgY, z: this.orgZ},
+    {x: this.orgX, y: this.orgY, z: this.orgZ + this.orgsz},
+    {x: this.orgX + this.orgsx, y: this.orgY, z: this.orgZ + this.orgsz},
+    {x: this.orgX, y: this.orgY + this.orgsy, z: this.orgZ},
+    {x: this.orgX + this.orgsx, y: this.orgY + this.orgsy, z: this.orgZ},
+    {x: this.orgX, y: this.orgY + this.orgsy, z: this.orgZ + this.orgsz},
+    {x: this.orgX + this.orgsx, y: this.orgY + this.orgsy, z: this.orgZ + this.orgsz}
+];
+this.rff();
+}};
+
+objects3D.push(c);
+};
+
+function draw_line(point, point1, object) {
+    ctx.beginPath();
+    ctx.moveTo(point.x, point.y);
+    ctx.lineTo(point1.x, point1.y);
+    ctx.strokeStyle = object.c;
+    ctx.stroke();
+};
+function allTransitions(o) {
+    let newX = (o.orgX - player.x); 
+let newZ = (o.orgZ - player.z);
+let direction = [o.orgX , o.orgZ ];
+let player_direction = [0,0];
+player_direction[0] = player.x + Math.cos(player.ry) * o.d;
+player_direction[1] = player.z + Math.sin(player.ry) * o.d;
+//THE PLAYER_DIR VARIABLE IS POINT A
+//DIRECTION VARIABLE IS POINT B
+let directionStart = [player.x , player.z];
+let player_directionStart = directionStart;
+//S = THETA * RADIUS...THETA = S / RADIUS...
+let S = Math.sqrt((direction[0] - player_direction[0]) * (direction[0] - player_direction[0]) + (direction[1] - player_direction[1])  * (direction[1] - player_direction[1]));
+let theta1 = S / o.d //THE ANGULAR DIFFERENCE IN RADIANS
+let check = (o.orgX - player.x) * Math.sin(player.ry) - (o.orgZ - player.z) * Math.cos(player.ry);
+
+let realTheta = theta1;
+theta = theta1;
+
+if (check > 0) {
+    realTheta = -theta1;
+};
+//DOING ACTUALLY EVERYTHING
+        o.sx = (o.orgsx * oneUnit_equalsto) / o.d;
+    o.sy = (o.orgsy * oneUnit_equalsto) / o.d;
+
+    let sx1 = (canvas.width / 2) - (realTheta * canvas.width);
+    let sy1 = (canvas.height / 2) - (o.sy / 2);
+
+
+
+o.x = sx1;
+o.y = sy1;
+o.z = newZ;
+};
+
+
+
+//SAME FOR 3D
+function allTransitions_3Dobjects(o) {
+        let newX = (o.orgX - player.x); 
+let newZ = (o.orgZ - player.z);
+let direction = [o.orgX , o.orgZ ];
+let player_direction = [0,0];
+player_direction[0] = player.x + Math.cos(player.ry) * o.d;
+player_direction[1] = player.z + Math.sin(player.ry) * o.d;
+//THE PLAYER_DIR VARIABLE IS POINT A
+//DIRECTION VARIABLE IS POINT B
+let directionStart = [player.x , player.z];
+let player_directionStart = directionStart;
+//S = THETA * RADIUS...THETA = S / RADIUS...
+let S = Math.sqrt((direction[0] - player_direction[0]) * (direction[0] - player_direction[0]) + (direction[1] - player_direction[1])  * (direction[1] - player_direction[1]));
+let theta1 = S / o.d //THE ANGULAR DIFFERENCE IN RADIANS
+let check = (o.orgX - player.x) * Math.sin(player.ry) - (o.orgZ - player.z) * Math.cos(player.ry);
+
+let realTheta = theta1;
+theta11 = theta1;
+
+if (check > 0) {
+    realTheta = -theta1;
+};
+//DOING ACTUALLY EVERYTHING
+        o.sx = (o.orgsx * oneUnit_equalsto) / o.d;
+    o.sy = (o.orgsy * oneUnit_equalsto) / o.d;
+    o.sz = (o.orgsz * oneUnit_equalsto) / o.d;
+
+    let sx1 = (canvas.width / 2) - (realTheta * canvas.width);
+    let sy1 = (canvas.height / 2) - (o.sy / 2);
+
+
+
+o.x = sx1;
+o.y = sy1;
+o.z = newZ;
+};
+
+function playSound(path) {
+    const sound = new Audio();
+    sound.src = path;
+    sound.play();
+};
+
+function lm(p) {
+    const img = new Image();
+    img.src = p;
+    return img;
+};
+
+function newMonsta() {
+    objects.push({
+        orgX: -200 + Math.floor(Math.random() * 800), orgZ: -200 + Math.floor(Math.random() * 800), x: 0,
+        y: 0, z: 0, orgsx: 50, 
+        orgsy: 90,img: lm("./dandoe_soldier.png"), hp: 100,
+        visible: true, attackCD: 0,onClick() {
+            console.log("CLICKS REGIESTER ")
+            if(player.bullets > 0) {
+                if(this.hp > 0) {
+                    this.hp -= 30;
+                    playSound("./hurt.wav");
+                } else {
+                    playSound("./die.wav");
+                    this.visible = false;
+                    player.bullets += 2 + Math.floor(Math.random() * 3);
+                    this.d = 1000000000000;
+                    this.ff = function() {};
+                };
+            };
+        },speed: player.speed, ff() {
+            if(typeof this.d === "number" && this.d > 2) {
+if(this.orgX < player.x) this.orgX += this.speed;
+if(this.orgX > player.x) this.orgX -= this.speed;
+
+if(this.orgZ < player.z) this.orgZ += this.speed;
+if(this.orgZ > player.z) this.orgZ -= this.speed;
+            } else {
+                if(this.attackCD < 60) {
+                    this.attackCD ++;
+                } else {
+                    if(player.hp > 0) {
+                player.hp -= 20;
+                player.bullets --;
+                    } else {
+                        window.location.reload();
+                    };
+                    this.attackCD = 0;
+                };
+            };
+        }
+    });
+};
+
+function trees() {
+    for(let i = 0; i < 200; i ++) {
+    objects.push({
+        img: lm("./shitasstree.png"),
+        x: 0,
+        y: 0,
+        z: 0,
+        orgsx: 60,
+        orgsy: 120,
+        orgX: -500 + Math.floor(Math.random() * canvas.width * 2) - canvas.width * 0.76,
+        orgZ:  -500 + Math.floor(Math.random() * canvas.width * 2) - canvas.width * 0.76,
+        visible: true,
+    });
+};
+};
+
+//VARIABLES
+let canvas = document.createElement("canvas");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+document.body.appendChild(canvas);
+const ctx = canvas.getContext("2d");
+let oneUnit_equalsto = 32; //pixels.
+let objects3D = [
+
+];
+let theta11 = 0;
+let player = {
+    x: 50, y: 0, z: 0,
+    ry: 0, fov: 65, directionVector: [0,0,0],
+    dirVRay: [0,0,0], sens: 1,speed: 0.05,
+    translatedX: 0,
+    ff() {
+                    let strafeVectorx = Math.cos(this.ry + (Math.PI / 2)) * this.speed;
+            let strafeVectorz =  Math.sin(this.ry + (Math.PI / 2)) * this.speed;
+        if(keys["w"] || keys["W"]) {
+            this.x -= -this.directionVector[0] * this.speed * oneUnit_equalsto;
+            this.z -= -this.directionVector[2] * this.speed * oneUnit_equalsto;
+            for(let  i= 0; i <  objects.length; i++) {
+                let o = objects[i];
+              
+                      };
+        };
+          if(keys["s"] || keys["S"]) {
+            this.x += -this.directionVector[0] * this.speed * oneUnit_equalsto;
+            this.z += -this.directionVector[2] * this.speed * oneUnit_equalsto;
+                for(let  i= 0; i <  objects.length; i++) {
+                let o = objects[i];
+                      
+                      };
+        };
+        if(keys["a"] || keys['A']) {
+
+            this.x -= -strafeVectorx;
+            this.z -= -strafeVectorz;
+        };
+         if(keys["d"] || keys['D']) {
+
+            this.x -= strafeVectorx;
+            this.z -= strafeVectorz;
+        };
+    }, renderDistance: 500, 
+    bullets: 25, hp: 100,
+};
+
+let objects = [
+
+];
+let keys = [];
+let cpk = 0;
+let cmbd = null;
+let theta = 0;
+
+//EVENT LISTENERS
+window.addEventListener("keydown", e => {
+    keys[e.key] = true;
+    cpk = e.key;
+    if(!document.pointerLockElement) {
+        document.body.requestPointerLock();
+    };
+
+});
+window.addEventListener("keyup", e => {
+    keys[e.key] = false;
+    cpk = 0;
+});
+window.addEventListener("mousemove", e => {
+    //CONVERT DEGREES TO RADIANS
+    let rotation = (Math.PI / 360 * player.sens) / 10;
+   player.ry -= e.movementX * rotation;
+
+player.directionVector[0] = Math.cos(player.ry) * player.speed;
+player.directionVector[2] = Math.sin(player.ry) * player.speed;
+
+
+});
+
+window.addEventListener("mousedown", e => {
+    cmbd = e.button;
+if(player.bullets > 0) {
+    player.bullets --;
+    playSound("./shot.wav");
+};
+    for(let i = 0; i < objects.length;i++) {
+        let o = objects[i];
+if(typeof o.onClick === "function") {
+    let x = (canvas.width - 2) / 2;
+    let y = (canvas.height - 2) / 2;
+        let check = x >= o.x &&
+            x <= o.x + o.sx &&
+        y >= o.y &&
+            y <= o.y + o.sy;
+
+            if(check) {
+                o.onClick();
+            };
+};
+    };
+});
+
+//CALL NECESSARY FUNCTIONS/INTERVALS    
+ setInterval(newMonsta, 5500);
+ trees();
+ cube(10,10,10,1,1,1,"red", true, function() {});
+
+//RENDER
+function r() {
+ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.fillStyle = "green";
+ctx.fillRect(0, canvas.height/2, canvas.width, canvas.height);
+for(let i = 0; i < objects.length + 1; i++) {
+    let o = objects[i];
+
+if(typeof o === "object") {
+    o.d = cd(o,player);
+    if(typeof o.ff === "function") {
+        o.ff();
+    };
+    objects.sort(function(x,y) {
+return y.d - x.d;
+    });
+   allTransitions(o);
+if(theta < 0.6 && o.visible === true) {
+        if(typeof o.img === "undefined") {
+            ctx.fillStyle = o.c;
+            ctx.fillRect(o.x, o.y,o.sx,o.sy);
+        } else {
+            ctx.drawImage(o.img, o.x, o.y,o.sx,o.sy);
+        };
+};
+};
+
+};
+//3D OBJECTS FOREACH
+for(let i = 0; i < objects3D.length; i++) {
+    let o = objects3D[i];
+
+if(typeof o === "object") {
+    o.d = cd(o,player);
+    if(typeof o.ff === "function") {
+        o.ff();
+    };
+    objects.sort(function(x,y) {
+return y.d - x.d;
+    });
+   allTransitions_3Dobjects(o);
+if(theta11 < 0.6 && o.visible === true) {
+        if(typeof o.img === "undefined") {
+            draw_line(o.points[0], o.points[1], o);
+            draw_line(o.points[2], o.points[3], o);
+            draw_line(o.points[4], o.points[5], o);
+            draw_line(o.points[6], o.points[7], o);
+        } else {
+            ctx.drawImage(o.img, o.x, o.y,o.sx,o.sy);
+        };
+};
+};
+
+};
+
+
+//CALLING ANY OTHER SPECIAL FF'S
+player.ff();
+ctx.fillStyle = "black";
+ctx.fillRect((canvas.width - 2) / 2, (canvas.height - 2) / 2, 4,4);
+
+ctx.font = "15px Comic Sans MS";
+ctx.fillText("Hp: " + player.hp + "   Bullets: " + player.bullets, 10,15);
+    requestAnimationFrame(r);
+
+};
+
+r();
+
+    </script>
+</html>
