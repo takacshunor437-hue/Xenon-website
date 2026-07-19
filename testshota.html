@@ -28,16 +28,7 @@ let vertices = [
 ];
 
 let c = {points: vertices, orgsx: sx, rff: ff,orgsy: sy, orgsz:sz, orgX: x, orgY: y, orgZ: z, sx: sx, sy: sy, sz: sz, x:x,y:y,z:z,c:col, visible: visible, ff() {
-    this.points = [
-    {x: this.orgX, y: this.orgY, z: this.orgZ},
-    {x: this.orgX + this.orgsx, y: this.orgY, z: this.orgZ},
-    {x: this.orgX, y: this.orgY, z: this.orgZ + this.orgsz},
-    {x: this.orgX + this.orgsx, y: this.orgY, z: this.orgZ + this.orgsz},
-    {x: this.orgX, y: this.orgY + this.orgsy, z: this.orgZ},
-    {x: this.orgX + this.orgsx, y: this.orgY + this.orgsy, z: this.orgZ},
-    {x: this.orgX, y: this.orgY + this.orgsy, z: this.orgZ + this.orgsz},
-    {x: this.orgX + this.orgsx, y: this.orgY + this.orgsy, z: this.orgZ + this.orgsz}
-];
+
 this.rff();
 }};
 
@@ -91,8 +82,7 @@ o.z = newZ;
 
 //SAME FOR 3D
 function allTransitions_3Dobjects(o) {
-        let newX = (o.orgX - player.x); 
-let newZ = (o.orgZ - player.z);
+
 let direction = [o.orgX , o.orgZ ];
 let player_direction = [0,0];
 player_direction[0] = player.x + Math.cos(player.ry) * o.d;
@@ -107,7 +97,7 @@ let theta1 = S / o.d //THE ANGULAR DIFFERENCE IN RADIANS
 let check = (o.orgX - player.x) * Math.sin(player.ry) - (o.orgZ - player.z) * Math.cos(player.ry);
 
 let realTheta = theta1;
-theta11 = theta1;
+theta = theta1;
 
 if (check > 0) {
     realTheta = -theta1;
@@ -115,18 +105,19 @@ if (check > 0) {
 //DOING ACTUALLY EVERYTHING
         o.sx = (o.orgsx * oneUnit_equalsto) / o.d;
     o.sy = (o.orgsy * oneUnit_equalsto) / o.d;
-    o.sz = (o.orgsz * oneUnit_equalsto) / o.d;
+    for(let i = 0; i < o.points.length; i++) {
+let o1 = o.points[i];
+let newX = (o1.x - player.x); 
+let newZ = (o1.z - player.z);
 
-    let sx1 = (canvas.width / 2) - (realTheta * canvas.width);
+ let sx1 = (canvas.width / 2) - (realTheta * canvas.width);
     let sy1 = (canvas.height / 2) - (o.sy / 2);
-
-
 
 o.x = sx1;
 o.y = sy1;
 o.z = newZ;
+    };
 };
-
 function playSound(path) {
     const sound = new Audio();
     sound.src = path;
@@ -305,7 +296,7 @@ if(typeof o.onClick === "function") {
 //CALL NECESSARY FUNCTIONS/INTERVALS    
  setInterval(newMonsta, 5500);
  trees();
- cube(10,10,10,1,1,1,"red", true, function() {});
+ cube(10,10,10,50,1,40,"red", true, function() {});
 
 //RENDER
 function r() {
