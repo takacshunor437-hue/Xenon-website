@@ -105,14 +105,14 @@ let theta1 = S / o1.d //THE ANGULAR DIFFERENCE IN RADIANS
 let check = (o1.x- player.x) * Math.sin(player.ry) - (o1.z - player.z) * Math.cos(player.ry);
 
 let realTheta = theta1;
-theta11 = theta1;
+o1.theta = theta1;
 
 if (check > 0) {
     realTheta = -theta1;
 };
 
  let sx1 = (canvas.width / 2) - (realTheta * canvas.width);
-    let sy1 = (canvas.height / 2) - (o.sy / 2);
+    let sy1 = (canvas.height / 2) - (o1.sy / 2);
 
 o1.x = sx1;
 o1.y = sy1;
@@ -330,7 +330,7 @@ if(theta < 0.6 && o.visible === true) {
 //3D OBJECTS FOREACH
 for(let i = 0; i < objects3D.length; i++) {
     let o = objects3D[i];
-
+let pointIndex = 0;
 if(typeof o === "object") {
     o.d = cd(o,player);
     o.points.forEach(o1 => {
@@ -343,7 +343,7 @@ o1.d = cd(o1, player);
 return y.d - x.d;
     });
    allTransitions_3Dobjects(o);
-if(theta11 < 0.6 && o.visible === true) {
+if(o.points[pointIndex] < 0.6 && o.visible === true) {
         if(typeof o.img === "undefined") {
             draw_line(o.points[0], o.points[1], o);
             draw_line(o.points[2], o.points[3], o);
@@ -353,6 +353,12 @@ if(theta11 < 0.6 && o.visible === true) {
             ctx.drawImage(o.img, o.x, o.y,o.sx,o.sy);
         };
 };
+if(pointIndex < 8) {
+    pointIndex ++;
+} else {
+    pointIndex = 0;
+};
+console.log(o);
 };
 
 };
