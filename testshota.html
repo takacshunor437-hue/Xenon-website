@@ -82,19 +82,27 @@ o.z = newZ;
 
 //SAME FOR 3D
 function allTransitions_3Dobjects(o) {
-
-let direction = [o.orgX , o.orgZ ];
+    for(let i = 0; i < o.points.length; i++) {
+        let o1 = o.points[i];
+let direction = [o1.x, o1.z];
 let player_direction = [0,0];
-player_direction[0] = player.x + Math.cos(player.ry) * o.d;
-player_direction[1] = player.z + Math.sin(player.ry) * o.d;
+player_direction[0] = player.x + Math.cos(player.ry) * o1.d;
+player_direction[1] = player.z + Math.sin(player.ry) * o1.d;
 //THE PLAYER_DIR VARIABLE IS POINT A
 //DIRECTION VARIABLE IS POINT B
 let directionStart = [player.x , player.z];
 let player_directionStart = directionStart;
+
+//DOING ACTUALLY EVERYTHING
+        o.sx = (o.orgsx * oneUnit_equalsto) / o.d;
+    o.sy = (o.orgsy * oneUnit_equalsto) / o.d;
+
+let newX = (o1.x - player.x); 
+let newZ = (o1.z - player.z);
 //S = THETA * RADIUS...THETA = S / RADIUS...
 let S = Math.sqrt((direction[0] - player_direction[0]) * (direction[0] - player_direction[0]) + (direction[1] - player_direction[1])  * (direction[1] - player_direction[1]));
-let theta1 = S / o.d //THE ANGULAR DIFFERENCE IN RADIANS
-let check = (o.orgX - player.x) * Math.sin(player.ry) - (o.orgZ - player.z) * Math.cos(player.ry);
+let theta1 = S / o1.d //THE ANGULAR DIFFERENCE IN RADIANS
+let check = (o1.x- player.x) * Math.sin(player.ry) - (o1.z - player.z) * Math.cos(player.ry);
 
 let realTheta = theta1;
 theta11 = theta1;
@@ -102,13 +110,6 @@ theta11 = theta1;
 if (check > 0) {
     realTheta = -theta1;
 };
-//DOING ACTUALLY EVERYTHING
-        o.sx = (o.orgsx * oneUnit_equalsto) / o.d;
-    o.sy = (o.orgsy * oneUnit_equalsto) / o.d;
-    for(let i = 0; i < o.points.length; i++) {
-let o1 = o.points[i];
-let newX = (o1.x - player.x); 
-let newZ = (o1.z - player.z);
 
  let sx1 = (canvas.width / 2) - (realTheta * canvas.width);
     let sy1 = (canvas.height / 2) - (o.sy / 2);
@@ -332,6 +333,9 @@ for(let i = 0; i < objects3D.length; i++) {
 
 if(typeof o === "object") {
     o.d = cd(o,player);
+    o.points.forEach(o1 => {
+o1.d = cd(o1, player);
+    });
     if(typeof o.ff === "function") {
         o.ff();
     };
