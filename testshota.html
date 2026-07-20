@@ -18,17 +18,17 @@ function cd(x,y) {
 function cube(sx,sy, sz, x,y,z, col, visible, ff) {
 let vertices = [
     {x: x, y: y, z: z, orgX: x, orgY: y, orgZ: z},
-    {x: x + sx, y: y, z: z, orgX: x, orgY: y, orgZ: z},
-    {x: x, y: y, z: z + sz, orgX: x, orgY: y, orgZ: z},
-    {x: x + sx, y: y, z: z + sz, orgX: x, orgY: y, orgZ: z},
-    {x: x, y: y + sy, z: z, orgX: x, orgY: y, orgZ: z},
-    {x: x + sx, y: y + sy, z: z, orgX: x, orgY: y, orgZ: z},
-    {x: x, y: y + sy, z: z + sz, orgX: x, orgY: y, orgZ: z},
-    {x: x + sx, y: y + sy, z: z + sz, orgX: x, orgY: y, orgZ:z}
+    {x: x + sx, y: y, z: z, orgX: x + sx, orgY: y, orgZ: z},
+    {x: x, y: y, z: z + sz, orgX: x, orgY: y, orgZ: z + sz},
+    {x: x + sx, y: y, z: z + sz, orgX: x + sx, orgY: y, orgZ: z + sz},
+    {x: x, y: y + sy, z: z, orgX: x, orgY: y + sy, orgZ: z},
+    {x: x + sx, y: y + sy, z: z, orgX: x + sx, orgY: y + sy, orgZ: z},
+    {x: x, y: y + sy, z: z + sz, orgX: x, orgY: y + sy, orgZ: z + sz},
+    {x: x + sx, y: y + sy, z: z + sz, orgX: x + sx, orgY: y + sy, orgZ:z + sz}
 ];
 
 let c = {points: vertices, orgsx: sx, rff: ff,orgsy: sy, orgsz:sz, orgX: x, orgY: y, orgZ: z, sx: sx, sy: sy, sz: sz, x:x,y:y,z:z,c:col, visible: visible, ff() {
-
+    
 this.rff();
 }};
 
@@ -346,6 +346,7 @@ o1.d = Math.sqrt(dx * dx + dz * dz);
 return y.d - x.d;
     });
    allTransitions_3Dobjects(o);
+   console.log(o.points);
 if(o.points[pointIndex].theta < 0.6 && o.visible === true) {
         if(typeof o.img === "undefined") {
             ctx.fillStyle = o.c;
