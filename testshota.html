@@ -17,14 +17,14 @@ function cd(x,y) {
 
 function cube(sx,sy, sz, x,y,z, col, visible, ff) {
 let vertices = [
-    {x: x, y: y, z: z},
-    {x: x + sx, y: y, z: z},
-    {x: x, y: y, z: z + sz},
-    {x: x + sx, y: y, z: z + sz},
-    {x: x, y: y + sy, z: z},
-    {x: x + sx, y: y + sy, z: z},
-    {x: x, y: y + sy, z: z + sz},
-    {x: x + sx, y: y + sy, z: z + sz}
+    {x: x, y: y, z: z, orgX: x, orgY: y, orgZ: z},
+    {x: x + sx, y: y, z: z, orgX: x, orgY: y, orgZ: z},
+    {x: x, y: y, z: z + sz, orgX: x, orgY: y, orgZ: z},
+    {x: x + sx, y: y, z: z + sz, orgX: x, orgY: y, orgZ: z},
+    {x: x, y: y + sy, z: z, orgX: x, orgY: y, orgZ: z},
+    {x: x + sx, y: y + sy, z: z, orgX: x, orgY: y, orgZ: z},
+    {x: x, y: y + sy, z: z + sz, orgX: x, orgY: y, orgZ: z},
+    {x: x + sx, y: y + sy, z: z + sz, orgX: x, orgY: y, orgZ:z}
 ];
 
 let c = {points: vertices, orgsx: sx, rff: ff,orgsy: sy, orgsz:sz, orgX: x, orgY: y, orgZ: z, sx: sx, sy: sy, sz: sz, x:x,y:y,z:z,c:col, visible: visible, ff() {
@@ -84,7 +84,7 @@ o.z = newZ;
 function allTransitions_3Dobjects(o) {
     for(let i = 0; i < o.points.length; i++) {
         let o1 = o.points[i];
-let direction = [o1.x, o1.z];
+let direction = [o1.orgX, o1.orgZ];
 let player_direction = [0,0];
 player_direction[0] = player.x + Math.cos(player.ry) * o1.d;
 player_direction[1] = player.z + Math.sin(player.ry) * o1.d;
@@ -97,22 +97,21 @@ let player_directionStart = directionStart;
         o.sx = (o.orgsx * oneUnit_equalsto) / o.d;
     o.sy = (o.orgsy * oneUnit_equalsto) / o.d;
 
-let newX = (o1.x - player.x); 
-let newZ = (o1.z - player.z);
+let newX = (o1.orgX - player.x); 
+let newZ = (o1.orgZ - player.z);
 //S = THETA * RADIUS...THETA = S / RADIUS...
 let S = Math.sqrt((direction[0] - player_direction[0]) * (direction[0] - player_direction[0]) + (direction[1] - player_direction[1])  * (direction[1] - player_direction[1]));
 let theta1 = S / o1.d //THE ANGULAR DIFFERENCE IN RADIANS
-let check = (o1.x- player.x) * Math.sin(player.ry) - (o1.z - player.z) * Math.cos(player.ry);
+let check = (o1.orgX- player.x) * Math.sin(player.ry) - (o1.orgZ - player.z) * Math.cos(player.ry);
 
 let realTheta = theta1;
 o1.theta = theta1;
-
 if (check > 0) {
     realTheta = -theta1;
 };
 
  let sx1 = (canvas.width / 2) - (realTheta * canvas.width);
-    let sy1 = (canvas.height / 2) - (o.sy / 2);
+    let sy1 = (canvas.height / 2) - (o1.orgY);
 
 o1.x = sx1;
 o1.y = sy1;
@@ -297,7 +296,7 @@ if(typeof o.onClick === "function") {
 //CALL NECESSARY FUNCTIONS/INTERVALS    
  setInterval(newMonsta, 5500);
  trees();
- cube(10,10,10,50,1,40,"red", true, function() {});
+ cube(10,10,10,50,1,0,"red", true, function() {});
 
 //RENDER
 function r() {
@@ -334,8 +333,8 @@ let pointIndex = 0;
 if(typeof o === "object") {
     o.d = cd(o,player);
     o.points.forEach(o1 => {
-let dx = o1.x - player.x;
-let dz = o1.z - player.z;
+let dx = o1.orgX - player.x;
+let dz = o1.orgZ - player.z;
 
 o1.d = Math.sqrt(dx * dx + dz * dz);
 
@@ -347,8 +346,9 @@ o1.d = Math.sqrt(dx * dx + dz * dz);
 return y.d - x.d;
     });
    allTransitions_3Dobjects(o);
-if(o.points[pointIndex] < 0.6 && o.visible === true) {
+if(o.points[pointIndex].theta < 0.6 && o.visible === true) {
         if(typeof o.img === "undefined") {
+            ctx.fillStyle = o.c;
             draw_line(o.points[0], o.points[1], o);
             draw_line(o.points[2], o.points[3], o);
             draw_line(o.points[4], o.points[5], o);
@@ -362,7 +362,7 @@ if(pointIndex < 8) {
 } else {
     pointIndex = 0;
 };
-console.log(o.points[0]);
+
 };
 
 };
