@@ -85,7 +85,6 @@ let theta1 = S / p.d //THE ANGULAR DIFFERENCE IN RADIANS
 let check = (p.orgX - player.x) * Math.sin(player.ry) - (p.orgZ - player.z) * Math.cos(player.ry);
 let realTheta = theta1;
 p.theta = theta1;
-
 if (check > 0) {
     realTheta = -theta1;
 };
@@ -101,7 +100,10 @@ if(i === 0) {
     p.y = sy1;
 };
       if(i === 1) {
-        p.x = p.orgX  + Math.cos(o.ry) * o.orgsx + sx1;
+        let d_x = p.orgX - player.x;
+        let d_z = p.orgZ - player.z;
+        let angle = Math.atan2(d_x,d_z);
+        p.x = p.orgX +  Math.cos(o.ry - angle) * o.orgsx + sx1;
         p.z = newZ;
         p.y = sy1;
     };
@@ -350,9 +352,9 @@ if(o.p[a].theta < 0.6 && o.visible === true) {
     if(typeof o.img === "undefined") {
         console.log(o.p[1].x + " " + o.p[1].y + " " + o.p[1].z);
         draw_line(o.p[0], o.p[1], o);
+        draw_line({x: o.p[0].x,y: o.p[0].y - o.orgsy}, {x: o.p[1].x,y: o.p[1].y - o.orgsy},o);
     };
 };
-o.ry += 0.014;
 
 
 if(a === 1) {
