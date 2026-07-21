@@ -66,16 +66,15 @@ o.z = newZ;
 function allTransitions_rotated(o) {
 for(let  i= 0; i < o.p.length; i++) {
     let p = o.p[i];
+    let sy1 = (canvas.height / 2) - (p.y);
+    let newZ = p.orgZ - player.z;
       if(i === 0) {
         o.x = p.x;
         o.y = p.y;
         o.z = p.z;
     };
-      if(i === 1) {
-        p.x = p.orgX  + Math.cos(o.ry) * o.orgsx;
-        p.z = p.orgZ;
-    };
-let newZ = p.orgZ - player.z;
+
+
 let direction = [p.orgX , p.orgZ ];
 let player_direction = [0,0];
 player_direction[0] = player.x + Math.cos(player.ry) * p.d;
@@ -95,14 +94,17 @@ if (check > 0) {
     o.sy = (o.orgsy * oneUnit_equalsto) / o.d;
 
        let sx1 = (canvas.width / 2) - (realTheta * canvas.width);
-    let sy1 = (canvas.height / 2) - (p.y);
+    
 
 if(i === 0) {
     p.x = sx1;
     p.y = sy1;
-   
 };
-
+      if(i === 1) {
+        p.x = p.orgX  + Math.cos(o.ry) * o.orgsx + sx1;
+        p.z = newZ;
+        p.y = sy1;
+    };
 };
 };
 
@@ -190,7 +192,7 @@ let objects_canRotate = [
 {
     x: 50, y: 0, z: 0,
     orgX: 50, orgY: 0, orgZ: 0,
-    orgsx: 60, orgsy: 60, orgsz: 60,
+    orgsx: 500, orgsy: 60, orgsz: 60,
     c: "red", ry: 60, sx: 60,
     sy: 60, sz: 60, p: [
         {orgX: 50, orgY: 0, orgZ: 0, x: 50, y: 0, z: 0, theta: 0, d: 0}, //POINT 1, THE AXIS
@@ -346,14 +348,13 @@ for(let i = 0; i < objects_canRotate.length; i++) {
         allTransitions_rotated(o);
 if(o.p[a].theta < 0.6 && o.visible === true) {
     if(typeof o.img === "undefined") {
-        console.log("rendering process happens");
+        console.log(o.p[1].x + " " + o.p[1].y + " " + o.p[1].z);
         draw_line(o.p[0], o.p[1], o);
     };
 };
+o.ry += 0.014;
 
 
-
-console.log(o);
 if(a === 1) {
     a = -1;
 };
