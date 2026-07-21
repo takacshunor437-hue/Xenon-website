@@ -15,25 +15,7 @@ function cd(x,y) {
     return Math.sqrt(dx * dx + dz * dz);
 };
 
-function cube(sx,sy, sz, x,y,z, col, visible, ff) {
-let vertices = [
-    {x: x, y: y, z: z, orgX: x, orgY: y, orgZ: z},
-    {x: x + sx, y: y, z: z, orgX: x + sx, orgY: y, orgZ: z},
-    {x: x, y: y, z: z + sz, orgX: x, orgY: y, orgZ: z + sz},
-    {x: x + sx, y: y, z: z + sz, orgX: x + sx, orgY: y, orgZ: z + sz},
-    {x: x, y: y + sy, z: z, orgX: x, orgY: y + sy, orgZ: z},
-    {x: x + sx, y: y + sy, z: z, orgX: x + sx, orgY: y + sy, orgZ: z},
-    {x: x, y: y + sy, z: z + sz, orgX: x, orgY: y + sy, orgZ: z + sz},
-    {x: x + sx, y: y + sy, z: z + sz, orgX: x + sx, orgY: y + sy, orgZ:z + sz}
-];
 
-let c = {points: vertices, orgsx: sx, rff: ff,orgsy: sy, orgsz:sz, orgX: x, orgY: y, orgZ: z, sx: sx, sy: sy, sz: sz, x:x,y:y,z:z,c:col, visible: visible, ff() {
-    
-this.rff();
-}};
-
-objects3D.push(c);
-};
 
 function draw_line(point, point1, object) {
     ctx.beginPath();
@@ -42,6 +24,9 @@ function draw_line(point, point1, object) {
     ctx.strokeStyle = object.c;
     ctx.stroke();
 };
+
+
+
 function allTransitions(o) {
     let newX = (o.orgX - player.x); 
 let newZ = (o.orgZ - player.z);
@@ -78,46 +63,51 @@ o.y = sy1;
 o.z = newZ;
 };
 
-
-
-//SAME FOR 3D
-function allTransitions_3Dobjects(o) {
-    for(let i = 0; i < o.points.length; i++) {
-        let o1 = o.points[i];
-let direction = [o1.orgX, o1.orgZ];
+function allTransitions_rotated(o) {
+for(let  i= 0; i < o.p.length; i++) {
+    let p = o.p[i];
+      if(i === 0) {
+        o.x = p.x;
+        o.y = p.y;
+        o.z = p.z;
+    };
+      if(i === 1) {
+        p.x = p.orgX  + Math.cos(o.ry) * o.orgsx;
+        p.z = p.orgZ;
+    };
+let newZ = p.orgZ - player.z;
+let direction = [p.orgX , p.orgZ ];
 let player_direction = [0,0];
-player_direction[0] = player.x + Math.cos(player.ry) * o1.d;
-player_direction[1] = player.z + Math.sin(player.ry) * o1.d;
-//THE PLAYER_DIR VARIABLE IS POINT A
-//DIRECTION VARIABLE IS POINT B
-let directionStart = [player.x , player.z];
-let player_directionStart = directionStart;
+player_direction[0] = player.x + Math.cos(player.ry) * p.d;
+player_direction[1] = player.z + Math.sin(player.ry) * p.d;
 
-//DOING ACTUALLY EVERYTHING
-        o.sx = (o.orgsx * oneUnit_equalsto) / o.d;
-    o.sy = (o.orgsy * oneUnit_equalsto) / o.d;
-
-let newX = (o1.orgX - player.x); 
-let newZ = (o1.orgZ - player.z);
-//S = THETA * RADIUS...THETA = S / RADIUS...
 let S = Math.sqrt((direction[0] - player_direction[0]) * (direction[0] - player_direction[0]) + (direction[1] - player_direction[1])  * (direction[1] - player_direction[1]));
-let theta1 = S / o1.d //THE ANGULAR DIFFERENCE IN RADIANS
-let check = (o1.orgX- player.x) * Math.sin(player.ry) - (o1.orgZ - player.z) * Math.cos(player.ry);
-
+let theta1 = S / p.d //THE ANGULAR DIFFERENCE IN RADIANS
+let check = (p.orgX - player.x) * Math.sin(player.ry) - (p.orgZ - player.z) * Math.cos(player.ry);
 let realTheta = theta1;
-o1.theta = theta1;
+p.theta = theta1;
+
 if (check > 0) {
     realTheta = -theta1;
 };
 
- let sx1 = (canvas.width / 2) - (realTheta * canvas.width);
-    let sy1 = (canvas.height / 2) - (o1.orgY);
+ o.sx = (o.orgsx * oneUnit_equalsto) / o.d;
+    o.sy = (o.orgsy * oneUnit_equalsto) / o.d;
 
-o1.x = sx1;
-o1.y = sy1;
-o1.z = newZ;
-    };
+       let sx1 = (canvas.width / 2) - (realTheta * canvas.width);
+    let sy1 = (canvas.height / 2) - (p.y);
+
+if(i === 0) {
+    p.x = sx1;
+    p.y = sy1;
+   
 };
+
+};
+};
+
+//SAME FOR ROTATED
+
 function playSound(path) {
     const sound = new Audio();
     sound.src = path;
@@ -196,8 +186,18 @@ canvas.height = window.innerHeight;
 document.body.appendChild(canvas);
 const ctx = canvas.getContext("2d");
 let oneUnit_equalsto = 32; //pixels.
-let objects3D = [
-
+let objects_canRotate = [
+{
+    x: 50, y: 0, z: 0,
+    orgX: 50, orgY: 0, orgZ: 0,
+    orgsx: 60, orgsy: 60, orgsz: 60,
+    c: "red", ry: 60, sx: 60,
+    sy: 60, sz: 60, p: [
+        {orgX: 50, orgY: 0, orgZ: 0, x: 50, y: 0, z: 0, theta: 0, d: 0}, //POINT 1, THE AXIS
+        {orgX: 50, orgY: 0, orgZ: 0, x: 50, y: 0, z: 0, theta: 0, d: 0}, //POINT 2, POINT B
+    ],
+    visible: true
+}
 ];
 let theta11 = 0;
 let player = {
@@ -245,6 +245,8 @@ let keys = [];
 let cpk = 0;
 let cmbd = null;
 let theta = 0;
+let a = -1;
+let b = 0;
 
 //EVENT LISTENERS
 window.addEventListener("keydown", e => {
@@ -296,7 +298,6 @@ if(typeof o.onClick === "function") {
 //CALL NECESSARY FUNCTIONS/INTERVALS    
  setInterval(newMonsta, 5500);
  trees();
- cube(10,10,10,50,1,0,"red", true, function() {});
 
 //RENDER
 function r() {
@@ -324,49 +325,41 @@ if(theta < 0.6 && o.visible === true) {
         };
 };
 };
-
 };
-//3D OBJECTS FOREACH
-for(let i = 0; i < objects3D.length; i++) {
-    let o = objects3D[i];
-let pointIndex = 0;
-if(typeof o === "object") {
-    o.d = cd(o,player);
-    o.points.forEach(o1 => {
-let dx = o1.orgX - player.x;
-let dz = o1.orgZ - player.z;
-
-o1.d = Math.sqrt(dx * dx + dz * dz);
-
-});
-    if(typeof o.ff === "function") {
-        o.ff();
-    };
-    objects.sort(function(x,y) {
-return y.d - x.d;
-    });
-   allTransitions_3Dobjects(o);
-   console.log(o.points);
-if(o.points[pointIndex].theta < 0.6 && o.visible === true) {
-        if(typeof o.img === "undefined") {
-            ctx.fillStyle = o.c;
-            draw_line(o.points[0], o.points[1], o);
-            draw_line(o.points[2], o.points[3], o);
-            draw_line(o.points[4], o.points[5], o);
-            draw_line(o.points[6], o.points[7], o);
-        } else {
-            ctx.drawImage(o.img, o.x, o.y,o.sx,o.sy);
+//ROTATED OBJECTS
+for(let i = 0; i < objects_canRotate.length; i++) {
+    let o = objects_canRotate[i];
+    a ++;
+    if(typeof o === "object" && typeof o.p[a].theta === "number") {
+        o.d = cd(o, player);
+        if(typeof o.ff === "function") {
+            o.ff();
         };
-};
-if(pointIndex < 8) {
-    pointIndex ++;
-} else {
-    pointIndex = 0;
+        for(let i = 0; i < o.p.length; i++) {
+            let p = o.p[i];
+            let dx = p.orgX - player.x;
+            let dz = p.orgZ - player.z;
+            let a = Math.pow(dx, 2);
+            let b = Math.pow(dz, 2);
+            p.d = Math.sqrt(a + b);
+        };
+        allTransitions_rotated(o);
+if(o.p[a].theta < 0.6 && o.visible === true) {
+    if(typeof o.img === "undefined") {
+        console.log("rendering process happens");
+        draw_line(o.p[0], o.p[1], o);
+    };
 };
 
+
+
+console.log(o);
+if(a === 1) {
+    a = -1;
+};
+    };
 };
 
-};
 
 
 //CALLING ANY OTHER SPECIAL FF'S
