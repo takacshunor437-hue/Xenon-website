@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+
+<html>
+    <title>3Delta testshoota'</title>
+    <body></body>
+    <script>
+
+//FUNCTIONS
+function gravity(o) {
+    let cd = 0;
+    if(typeof o.grav === "boolean"){
+       
+        o.impulse = o.fs * o.mass;
+
+        if(o.y >= (canvas.height / 2) - (o.sy / 2)) {
+            cd ++;
+            if(cd === 1) {
+o.fs = 0;
+o.y = (canvas.height / 2) - (o.sy  / 2);
+            };
+        } else {
+             o.y += o.fs;
+        };
+    };
+};
+
+
+function cd(x,y) {
+    let dx = x.orgX - y.x;
+    let dz = x.orgZ - y.z;
+
+    return Math.sqrt(dx * dx + dz * dz);
+};
+
+
+
+function draw_line(point, point1, object) {
+    ctx.beginPath();
+    ctx.moveTo(point.x, point.y);
+    ctx.lineTo(point1.x, point1.y);
+    ctx.strokeStyle = object.c;
+    ctx.stroke();
+};
+
+
+
+function allTransitions(o) {
+    let newX = (o.orgX - player.x); 
+let newZ = (o.orgZ - player.z);
+let direction = [o.orgX , o.orgZ ];
+let player_direction = [0,0];
+player_direction[0] = player.x + Math.cos(player.ry) * o.d;
+player_direction[1] = player.z + Math.sin(player.ry) * o.d;
+//THE PLAYER_DIR VARIABLE IS POINT A
+//DIRECTION VARIABLE IS POINT B
+let directionStart = [player.x , player.z];
+let player_directionStart = directionStart;
+//S = THETA * RADIUS...THETA = S / RADIUS...
+let S = Math.sqrt((direction[0] - player_direction[0]) * (direction[0] - player_direction[0]) + (direction[1] - player_direction[1])  * (direction[1] - player_direction[1]));
+let theta1 = S / o.d //THE ANGULAR DIFFERENCE IN RADIANS
+let check = (o.orgX - player.x) * Math.sin(player.ry) - (o.orgZ - player.z) * Math.cos(player.ry);
+
+let realTheta = theta1;
+theta = theta1;
+
+if (check > 0) {
+    realTheta = -theta1;
+};
+//DOING ACTUALLY EVERYTHING
+        o.sx = (o.orgsx * oneUnit_equalsto) / o.d;
+    o.sy = (o.orgsy * oneUnit_equalsto) / o.d;
+
+    let sx1 = (canvas.width / 2) - (realTheta * canvas.width);
+    let sy1;
+    if(o.tallerThanPlayer === true) {
+      sy1  = (canvas.height / 2) - (o.sy / 2);
+    } else {
+        sy1  = (canvas.height / 2) + (o.sy / 2);
+    };
+
+
+
+o.x = sx1;
+o.y = sy1;
+o.z = newZ;
+};
+//SAME FOR ROTATED
+function allTransitions_rotated(o) {
+for(let  i= 0; i < o.p.length; i++) {
+    let p = o.p[i];
+    let sy1 = (canvas.height / 2) - (p.y);
+    let newZ = p.orgZ - player.z;
+      if(i === 0) {
+        o.x = p.x;
+        o.y = p.y;
+        o.z = p.z;
+    };
+
+
+let direction = [p.orgX , p.orgZ ];
+let player_direction = [0,0];
+player_direction[0] = player.x + Math.cos(player.ry) * p.d;
+player_direction[1] = player.z + Math.sin(player.ry) * p.d;
+
+let S = Math.sqrt((direction[0] - player_direction[0]) * (direction[0] - player_direction[0]) + (direction[1] - player_direction[1])  * (direction[1] - player_direction[1]));
+let theta1 = S / p.d //THE ANGULAR DIFFERENCE IN RADIANS
+let check = (p.orgX - player.x) * Math.sin(player.ry) - (p.orgZ - player.z) * Math.cos(player.ry);
+let realTheta = theta1;
+p.theta = theta1;
+if (check > 0) {
+    realTheta = -theta1;
+};
+
+ o.sx = (o.orgsx * oneUnit_equalsto) / o.d;
+    o.sy = (o.orgsy * oneUnit_equalsto) / o.d;
+
+       let sx1 = (canvas.width / 2) - (realTheta * canvas.width);
+    
+
+if(i === 0) {
+    p.x = sx1;
+    p.y = sy1;
+};
+      if(i === 1) {
+        let d_x = p.orgX - player.x;
+        let d_z = p.orgZ - player.z;
+        let angle = Math.atan2(d_x,d_z);
+        p.x = p.orgX +  Math.cos(o.ry - angle) * o.orgsx + sx1;
+        p.z = newZ;
+        p.y = sy1;
+    };
+};
+};
+
+
+function playSound(path) {
+    const sound = new Audio();
+    sound.src = path;
+    sound.play();
+};
+
+function lm(p) {
+    const img = new Image();
+    img.src = p;
+    return img;
+};
+
+
+
+function trees() {
+    for(let i = 0; i < 200; i ++) {
+    objects.push({
+        img: lm("./tree.png"),
+        x: 0,
+        y: 0,
+        z: 0,
+        orgsx: 190 + (Math.random() * 31),
+        nonGrav: true,
+        orgsy: 380 + (Math.random() * 31),
+        orgX: -canvas.width + Math.random() * canvas.width * 2,
+        orgZ:  -canvas.width + Math.random() * canvas.width * 2,
+        tallerThanPlayer: true,
+        visible: true,
+        cd: 0,
+        ff() {
+        if(this.cd < 1) {
+            if(Math.floor(Math.random() * 3) +1 === 1) {
+                this.img = lm("./tree.png");
+            };
+            if(Math.floor(Math.random() * 3) +1 === 2) {
+                this.img = lm("./tree0.png");
+            };
+            if(Math.floor(Math.random() * 3) +1 === 3) {
+                this.img = lm("./tree1.png");
+            };
+        };
+        this.cd = 1;
+        }
+    });
+};
+};
+
+//VARIABLES
+let canvas = document.createElement("canvas");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+document.body.appendChild(canvas);
+const ctx = canvas.getContext("2d");
+let oneUnit_equalsto = 32; //pixels.
+let gravitational_acceleration = 9.81;
+let keys = [];
+let cpk = 0;
+let cmbd = null;
+let theta = 0;
+let a = -1;
+let b = 0;
+let darkness = 0;
+let objects_canRotate = [];
+let theta11 = 0;
+let player = {
+    x: 0, y: canvas.width /2, z: 0,
+    ry: 0, fov: 65, directionVector: [0,0,0],
+    dirVRay: [0,0,0], sens: 1,speed: 0.05,
+    a: 0.02,
+    bike: false, mass: 77.5,
+    ff() {
+        this.impulse = this.speed * this.mass;
+        this.force = this.mass * gravitational_acceleration;
+        this.directionVector[0] = Math.cos(this.ry) * this.speed;
+this.directionVector[2] = Math.sin(this.ry) * this.speed;
+                    let strafeVectorx = Math.cos(this.ry + (Math.PI / 2)) * this.speed;
+            let strafeVectorz =  Math.sin(this.ry + (Math.PI / 2)) * this.speed;
+        if(keys["w"] || keys["W"]) {
+            this.x -= -this.directionVector[0] * this.speed * oneUnit_equalsto;
+            this.z -= -this.directionVector[2] * this.speed * oneUnit_equalsto;
+        };
+         if(!keys["w"] || !keys["W"]) {
+            if(this.bike === true) {
+            this.x -= -this.directionVector[0] * this.speed * oneUnit_equalsto;
+            this.z -= -this.directionVector[2] * this.speed * oneUnit_equalsto;
+            };
+        };
+          if(keys["s"] || keys["S"]) {
+            if(this.bike === false) {
+            this.x += -this.directionVector[0] * this.speed * oneUnit_equalsto;
+            this.z += -this.directionVector[2] * this.speed * oneUnit_equalsto;
+            } else {
+                 this.x += -this.directionVector[0];
+            this.z += -this.directionVector[2];
+            };
+        };
+        if(this.bike === false) {
+        if(keys["a"] || keys['A']) {
+
+            this.x -= -strafeVectorx;
+            this.z -= -strafeVectorz;
+        };
+         if(keys["d"] || keys['D']) {
+
+            this.x -= strafeVectorx;
+            this.z -= strafeVectorz;
+        };
+    };
+    }, renderDistance: 500, 
+    bullets: 25, hp: 100, rx: 0,
+};
+
+let objects = [
+{x: 0, y: 0, z: 0, nonGrav: true, orgX: 0, orgY: 0, orgZ: 10, sx: 0, sy: 0, tallerThanPlayer: false,orgsx: 195, orgsy: 97.5, visible: true, img: lm("./bike_off.png"),
+    a: 0.005, clickDown: true, ry: 0, velocity: 0, velocityLimit: 1.14, moveCondition() {return keys["W"] || keys["w"] && player.bike === true},
+    immStop: false, mass: 20, physics: true,
+    onClick() {
+        if(typeof this.d === "number" && this.d < 20) {
+        player.bike = true;
+        this.visible = false;
+        };
+    },
+    ff() {
+        if(player.bike === true) {
+            this.orgX = player.x;
+            this.orgZ = player.z;
+        
+        if(keys["e"] || keys["E"]) {
+            this.visible = true;
+            player.bike = false;
+            player.speed = 0.05;
+        };
+       if(this.velocity > 0.08) {
+        if(keys["a"] || keys["A"]) {
+            this.ry += 0.014;
+        };
+        if(keys["d"] || keys["D"]) {
+            this.ry -= (0.00520 *2);
+        };
+    };
+    if(keys["s"] && keys["S"]) {
+        this.velocity -= this.a;
+    };
+         player.ry = this.ry;
+         player.speed = this.velocity;
+    };
+    }
+}
+];
+let overlays = [
+        {x: 0, y: canvas.height * 0.25, sx: canvas.width, sy: canvas.height, img: lm("./bike_on.png"), visible: false, ff() {
+            if(player.bike === true) this.visible = true;
+            if(player.bike === false) this.visible = false;
+        }}
+];
+let text = [];
+
+
+//EVENT LISTENERS
+window.addEventListener("keydown", e => {
+    keys[e.key] = true;
+    cpk = e.key;
+});
+window.addEventListener("keyup", e => {
+    keys[e.key] = false;
+    cpk = 0;
+});
+window.addEventListener("mousemove", e => {
+    //CONVERT DEGREES TO RADIANS
+    if(player.bike === false) {
+    let rotation = (Math.PI / 360 * player.sens) / 10;
+   player.ry -= e.movementX * rotation;
+   player.rx -= e.movementY * rotation;
+    };
+
+});
+
+window.addEventListener("mousedown", e => {
+    cmbd = e.button;
+    if(!document.pointerLockElement) {
+        document.body.requestPointerLock();
+    };
+    for(let i = 0; i < overlays.length; i++) {
+        let o = overlays[i];
+        let x = e.clientX;
+        let y = e.clientY;
+
+           let check = x >= o.x &&
+            x <= o.x + o.sx &&
+        y >= o.y &&
+            y <= o.y + o.sy;
+
+            if(check && typeof o.onClick === "function") {
+                o.onClick();
+            };
+    };
+    for(let i = 0; i < objects.length;i++) {
+        let o = objects[i];
+if(typeof o.onClick === "function") {
+    let x = (canvas.width - 2) / 2;
+    let y = (canvas.height - 2) / 2;
+    if(typeof o.clickDown === "undefined") {
+            let check = x >= o.x &&
+            x <= o.x + o.sx &&
+        y >= o.y &&
+            y <= o.y + o.sy;
+
+            if(check) {
+                o.onClick();
+            };
+        } else {
+       let check = x >= o.x &&
+            x <= o.x + o.sx;
+
+            if(check) {
+                o.onClick();
+            };
+        };
+};
+    };
+});
+
+//CALL NECESSARY FUNCTIONS/INTERVALS    
+ trees();
+
+ setInterval(function() {
+    let x = 0;
+    let z;
+    let add;
+for(let i = 0; i < objects.length; i++) {
+    let o = objects[i];
+    if(typeof o.grav === "boolean") {
+        o.fs += (gravitational_acceleration / 10);
+    };
+    if(typeof o.moveCondition === "function") {
+     z = o.moveCondition();
+    };
+    if(typeof o.a === "number") {
+       add = (o.a / 10) - o.friction;
+    };
+    if(typeof o.a === "number" && z) {
+       
+        if(o.velocity < o.velocityLimit) {
+        o.velocity += add;
+        };
+    };
+        if(o.immStop === false) {
+            if(!z) {
+            if(o.velocity > 0) {
+            o.velocity -= add;
+            } else {
+                  x++;
+if(x === 1) {
+    o.velocity = 0;
+    x = 0;
+};
+            };
+        };
+        } else {
+            if(!z) {
+             x ++;
+             if(x === 1) {
+                o.velocity = 0;
+             };
+             x = 0;
+            };
+        };
+   
+
+
+};
+if(keys["w"] || keys["W"] || keys["s"] || keys["S"] || keys["a"] || keys["A"] || keys["d"] || keys["D"]) {
+    if(player.speed < 0.1455345) {
+    player.speed += (player.a / 10);
+    };
+} else {
+    player.speed = 0.05;
+};
+ }, 1);
+
+//RENDER
+function r() {
+ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.fillStyle = "green";
+ctx.fillRect(0, canvas.height/2, canvas.width, canvas.height);
+for(let i = 0; i < objects.length + 1; i++) {
+    let o = objects[i];
+
+if(typeof o === "object") {
+    o.d = cd(o,player);
+    if(typeof o.ff === "function") {
+        o.ff();
+    };
+    objects.sort(function(x,y) {
+return y.d - x.d;
+    });
+    gravity(o);
+   allTransitions(o);
+   if(o.physics) {
+    o.friction_coefficient = 0.0000001 * o.mass;
+    o.impulse = o.mass * o.velocity;
+    o.friction = (o.mass * gravitational_acceleration) * o.friction_coefficient;
+    o.potentialEnergy = (o.y - canvas.height/ 2) * o.mass * gravitational_acceleration;
+   };
+if(theta < 0.6 && o.visible === true && o.d < player.renderDistance) {
+        if(typeof o.img === "undefined") {
+            ctx.fillStyle = o.c;
+            ctx.fillRect(o.x, o.y,o.sx,o.sy);
+        } else {
+            ctx.drawImage(o.img, o.x, o.y,o.sx,o.sy);
+        };
+};
+};
+};
+//ROTATED OBJECTS
+for(let i = 0; i < objects_canRotate.length; i++) {
+    let o = objects_canRotate[i];
+    a ++;
+    if(typeof o === "object" && typeof o.p[a].theta === "number") {
+        o.d = cd(o, player);
+        if(typeof o.ff === "function") {
+            o.ff();
+        };
+        for(let i = 0; i < o.p.length; i++) {
+            let p = o.p[i];
+            let dx = p.orgX - player.x;
+            let dz = p.orgZ - player.z;
+            let a = Math.pow(dx, 2);
+            let b = Math.pow(dz, 2);
+            p.d = Math.sqrt(a + b);
+        };
+        allTransitions_rotated(o);
+if(o.p[a].theta < 0.6 && o.visible === true) {
+    if(typeof o.img === "undefined") {
+        draw_line(o.p[0], o.p[1], o);
+
+    } else {
+
+    };
+};
+
+if(a === 1) {
+    a = -1;
+};
+    };
+};
+
+//FOR LOOP OF OVERLAYS
+for(let i = 0; i < overlays.length; i++) {
+    let o = overlays[i];
+
+    if(typeof o.ff === "function") {
+        o.ff();
+    };
+    if(o.visible === true) {
+    if(typeof o.img === "undefined") {
+        ctx.fillStyle = o.c;
+        ctx.fillRect(o.x,o.y,o.sx,o.sy);
+    } else {
+ctx.drawImage(o.img, o.x, o.y, o.sx, o.sy);
+    };
+};
+};
+//FOR LOOP FOR TEXT
+for(let i = 0; i < text.length; i++) {
+    let t = text[i];
+    let x = t.x;
+    let y = t.y;
+    let f = t.f;
+    let c = t.c;
+    let ty = t.t;
+
+    let centeredx = (canvas.width - (ctx.measureText(t.text).width)) / 2;
+    let centeredy = (canvas.height - (ctx.measureText(t.text).height)) / 2;
+
+switch(ty) {
+    case "cx":
+        x = centeredx;
+        break;
+        case "cy":
+            y = centeredy;
+            break;
+            case "ca":
+                x = centeredx;
+                y = centeredy;
+};
+    ctx.font = f;
+    ctx.fillStyle = c;
+    ctx.fillText(t.text, x,y);
+};
+
+
+//CALLING ANY OTHER SPECIAL FF'S
+player.ff();
+ctx.fillStyle = "black";
+ctx.fillRect((canvas.width - 2) / 2, (canvas.height - 2) / 2, 4,4);
+
+    requestAnimationFrame(r);
+
+};
+
+r();
+
+    </script>
+</html>
