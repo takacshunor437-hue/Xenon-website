@@ -274,6 +274,22 @@ if(x === 1) {
     };
 };
 
+function reload() {
+    player.canShoot = false;
+    if(player.inventory[0] > 0 && player.inventory[1] < 2) {
+    player.inventory[0] -= (2 - player.inventory[1]);
+    player.inventory[1] += (2 - player.inventory[1]);
+    console.log(player.inventory[0] + " " + player.inventory[1]);
+    setTimeout(function() {player.canShoot = true}, 2500);
+    };
+};
+
+function onKeys() {
+    if(cpk === "r" || cpk === "R") {
+        reload();
+    };
+};
+
 //VARIABLES
 let canvas = document.createElement("canvas");
 canvas.width = window.innerWidth;
@@ -297,8 +313,14 @@ let player = {
     ry: 0, fov: 65, directionVector: [0,0,0],
     dirVRay: [0,0,0], sens: 1,speed: 0.05,
     a: 0.02,
-    bike: false, mass: 77.5, strafeVectorx: 0, strafeVectorz: 0,
+    bike: false, mass: 77.5, strafeVectorx: 0, 
+    strafeVectorz: 0, canShoot: true, equipped: "gun",
     ff() {
+        if(this.equipped === "gun" && this.inventory[1] > 0) {
+            this.canShoot = true;
+        } else {
+            this.canShoot = false;
+        };
         this.impulse = this.speed * this.mass;
         this.force = this.mass * gravitational_acceleration;
         this.directionVector[0] = Math.cos(this.ry) * this.speed;
@@ -340,7 +362,13 @@ this.directionVector[2] = Math.sin(this.ry) * this.speed;
     };
     }, renderDistance: 1500, 
     bullets: 25, hp: 100, rx: 0,
-    health: 100, ROOKIE_OFFBIKE: false,
+    health: 100, ROOKIE_OFFBIKE: false, 
+    inventory: [
+        //0: THE STORED BULLETS
+        10,
+        //1: THE BULLETS IN THE GUN:
+        2,
+    ], 
 };
 
 let objects = [
@@ -392,6 +420,59 @@ let overlays = [
             if(player.bike === true) this.visible = true;
             if(player.bike === false) this.visible = false;
         }},
+        {x: (canvas.width - canvas.width/6) / 2, y: canvas.height - canvas.height / 4.5, cd: 0,sx: canvas.width / 6, sy: canvas.height / 4.5,
+            visible: true, dir: false, dirC: 0,img: lm("./shottie.png"), ff() {
+                if(player.equipped === "gun") {
+                    this.visible = true;
+                }else {
+                    this.visible = false;
+                }; 
+                if(player.inventory[1] > 0 && player.canShoot === true) {
+                if(typeof cmbd === "number") {
+                 
+                    this.cd ++;
+                    if(this.cd < 2) {
+                          
+                    this.y = canvas.height - canvas.height / 7;
+                     player.inventory[1] --;
+                    if(Math.floor(Math.random() * 2) + 1===1) {
+                    player.ry +=  Math.random() / 5;
+                    } else {
+                         player.ry +=  -Math.random() / 5;
+                    };
+                    } else {
+                        this.y = canvas.height - canvas.height / 4.5;
+                    };
+                } else {
+                    
+                    this.y = canvas.height - canvas.height / 4.5;
+                    this.cd = 0;
+                };
+            };
+                if(keys["w"] || keys["W"] || keys["s"] ||keys["S"] || keys["a"] || keys["A"] || keys["d"] || keys["D"]) {
+                    this.dirC ++;
+                  
+                       if(this.dirC > 10) {
+this.dir = !this.dir;
+this.dirC = 0;
+                    };
+                
+                    if(this.dir === true) {
+                        this.x += 2;
+                    } else {
+                        this.x -= 2;
+                    };
+                };
+                if(!keys["w"] && !keys["W"] && !keys["s"] && !keys["S"] && !keys["a"] && !keys["A"] && !keys["d"] && !keys["D"]) {
+                    if(this.x > (canvas.width - canvas.width / 6) / 2) {
+                        this.x -= 2;
+                    }; 
+                     if(this.x < (canvas.width - canvas.width / 6) / 2) {
+                        this.x += 2;
+                    }; 
+                };
+            }
+        },
 {x: 0, y: 0, sx: canvas.width, sy: canvas.height, visible: true, c: "rgba(0,0,0," + 1 - brightness / 100 + ")", ff() {
     this.c = "rgba(0,0,0," + (1 - (brightness / 100)) + ")";
 }},
@@ -401,6 +482,7 @@ let text = [];
 window.addEventListener("keydown", e => {
     keys[e.key] = true;
     cpk = e.key;
+    onKeys();
 });
 window.addEventListener("keyup", e => {
     keys[e.key] = false;
@@ -459,6 +541,10 @@ if(typeof o.onClick === "function") {
         };
 };
     };
+});
+
+window.addEventListener("mouseup",  e => {
+    cmbd = null;
 });
 
 //CALL NECESSARY FUNCTIONS/INTERVALS    
