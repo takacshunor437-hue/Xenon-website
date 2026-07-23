@@ -288,6 +288,12 @@ function onKeys() {
     if(cpk === "r" || cpk === "R") {
         reload();
     };
+    if(cpk === "0") {
+        player.equipped = "none";
+    };
+    if(cpk === "1") {
+player.equipped = "gun";
+    };
 };
 
 //VARIABLES
@@ -420,7 +426,7 @@ let overlays = [
             if(player.bike === true) this.visible = true;
             if(player.bike === false) this.visible = false;
         }},
-        {x: (canvas.width - canvas.width/6) / 2, y: canvas.height - canvas.height / 4.5, cd: 0,sx: canvas.width / 6, sy: canvas.height / 4.5,
+        {x: (canvas.width - (canvas.width/6)) / 2, y: canvas.height - canvas.height / 3, cd: 0,sx: canvas.width / 6, sy: canvas.height / 3,
             visible: true, dir: false, dirC: 0,img: lm("./shottie.png"), ff() {
                 if(player.equipped === "gun") {
                     this.visible = true;
@@ -441,11 +447,11 @@ let overlays = [
                          player.ry +=  -Math.random() / 5;
                     };
                     } else {
-                        this.y = canvas.height - canvas.height / 4.5;
+                        this.y = canvas.height - canvas.height / 3;
                     };
                 } else {
                     
-                    this.y = canvas.height - canvas.height / 4.5;
+                    this.y = canvas.height - canvas.height / 3;
                     this.cd = 0;
                 };
             };
@@ -560,6 +566,12 @@ for(let i = 0; i < objects.length; i++) {
     let o = objects[i];
     if(typeof o.grav === "boolean") {
         o.fs += (gravitational_acceleration / 10);
+    };
+    if(typeof o.type === "string") {
+        if(o.type === "meat") {
+            //10000 SECONDS, 16.6 MINUTES
+            o.decayV += 0.0001;
+        };
     };
     if(typeof o.moveCondition === "function") {
      z = o.moveCondition();
