@@ -24,6 +24,33 @@ o.y = (canvas.height / 2) - (o.sy  / 2);
     };
 };
 
+function newMeat(x,y,z) {
+    objects.push({
+        orgX: x,
+        orgY: y,
+        orgZ: z,
+        x:0, y: 0, z: 0,
+        sx:0,
+        sy:0,
+        orgsx: 60,
+        orgsy: 80,
+        c: "red",
+        visible: true,
+        clickDown: true,
+        type: "meat",
+        decayV: 0,
+        parasite: 1 + Math.floor(Math.random() * 2),
+        onClick() {
+            console.log("MEAT PICKED TF UP");
+            this.visible = false;
+        },
+        ff() {
+            if(this.parasite === 2) {
+                this.c = "rgba(255, 50, 1, 1)";
+            };
+        }
+    });
+};
 
 function cd(x,y) {
     let dx = x.orgX - y.x;
@@ -45,6 +72,7 @@ function draw_line(point, point1, object) {
 
 
 function allTransitions(o) {
+  if(o.d < player.renderDistance) {
     let newX = (o.orgX - player.x); 
 let newZ = (o.orgZ - player.z);
 let direction = [o.orgX , o.orgZ ];
@@ -83,6 +111,7 @@ if (check > 0) {
 o.x = sx1;
 o.y = sy1;
 o.z = newZ;
+  };
 };
 //SAME FOR ROTATED
 function allTransitions_rotated(o) {
@@ -148,7 +177,7 @@ function lm(p) {
 
 
 function trees() {
-    for(let i = 0; i < 200; i ++) {
+    for(let i = 0; i < 100; i ++) {
     objects.push({
         img: lm("./tree.png"),
         x: 0,
@@ -157,10 +186,11 @@ function trees() {
         orgsx: 190 + (Math.random() * 31),
         nonGrav: true,
         orgsy: 380 + (Math.random() * 31),
-        orgX: -canvas.width + Math.random() * canvas.width * 2,
-        orgZ:  -canvas.width + Math.random() * canvas.width * 2,
+        orgX: -canvas.width * 2 + Math.random() * canvas.width * 4,
+        orgZ:  -canvas.width * 2 + Math.random() * canvas.width * 4,
         tallerThanPlayer: true,
         visible: true,
+        coll: true,
         cd: 0,
         ff() {
         if(this.cd < 1) {
@@ -180,6 +210,70 @@ function trees() {
 };
 };
 
+function collide(o) {
+    if(typeof o.coll === "boolean") {
+        let dx = o.orgX - player.x;
+        let dz = o.orgZ - player.z;
+        
+    if(dx < 0) {
+        dx = -dx;
+    };
+    if(dz < 0) {
+        dz = -dz;
+    };
+        let condition = dx < 5 && dz < 5;
+        
+        if(condition) {
+
+              player.x -= player.directionVector[0] * player.speed * oneUnit_equalsto *2;
+                player.z -= player.directionVector[2] * player.speed * oneUnit_equalsto *2;
+if(player.bike === true) {
+    player.bike = false;
+    player.ROOKIE_OFFBIKE = true;
+    if(player.impulse > player.mass) {
+        player.health -= (player.impulse);
+    };
+};
+
+            if(keys["w"] || keys["W"]) {
+                player.x -= player.directionVector[0] * player.speed * oneUnit_equalsto *2;
+                player.z -= player.directionVector[2] * player.speed * oneUnit_equalsto *2;
+              
+            };
+             if(keys["s"] || keys["S"]) {
+                player.x -= -player.directionVector[0] * player.speed * oneUnit_equalsto * 2;
+                player.z -= -player.directionVector[2] * player.speed * oneUnit_equalsto *2;
+            };
+            if(keys["a"] || keys["A"]) {
+                player.x -= -player.strafeVectorx * player.speed * oneUnit_equalsto *2;
+                player.z -= -player.strafeVectorz * player.speed * oneUnit_equalsto *2;
+            };
+             if(keys["d"] || keys["D"]) {
+                player.x -= player.strafeVectorx * player.speed * oneUnit_equalsto *2;
+                player.z -= player.strafeVectorz * player.speed * oneUnit_equalsto *2;
+            };
+            
+        };
+    };
+};
+
+function fly() {
+    let x = 0;
+    if(player.ROOKIE_OFFBIKE === true) {
+        player.x -= -player.directionVector[0] * player.speed * oneUnit_equalsto;
+         player.z -= -player.directionVector[2] * player.speed * oneUnit_equalsto;
+         player.speed -= player.a;
+         if(player.speed <= 0.05) {
+            player.ROOKIE_OFFBIKE = false;
+x++;
+if(x === 1) {
+    player.speed = 0.05;
+    x = 0;
+};
+         };
+    };
+};
+
 //VARIABLES
 let canvas = document.createElement("canvas");
 canvas.width = window.innerWidth;
@@ -194,7 +288,8 @@ let cmbd = null;
 let theta = 0;
 let a = -1;
 let b = 0;
-let darkness = 0;
+let brightness = 100;
+let skyColor = "rgba(0,0,255,1)";
 let objects_canRotate = [];
 let theta11 = 0;
 let player = {
@@ -202,7 +297,7 @@ let player = {
     ry: 0, fov: 65, directionVector: [0,0,0],
     dirVRay: [0,0,0], sens: 1,speed: 0.05,
     a: 0.02,
-    bike: false, mass: 77.5,
+    bike: false, mass: 77.5, strafeVectorx: 0, strafeVectorz: 0,
     ff() {
         this.impulse = this.speed * this.mass;
         this.force = this.mass * gravitational_acceleration;
@@ -210,6 +305,8 @@ let player = {
 this.directionVector[2] = Math.sin(this.ry) * this.speed;
                     let strafeVectorx = Math.cos(this.ry + (Math.PI / 2)) * this.speed;
             let strafeVectorz =  Math.sin(this.ry + (Math.PI / 2)) * this.speed;
+            this.strafeVectorx = strafeVectorx;
+            this.strafeVectorz = strafeVectorz;
         if(keys["w"] || keys["W"]) {
             this.x -= -this.directionVector[0] * this.speed * oneUnit_equalsto;
             this.z -= -this.directionVector[2] * this.speed * oneUnit_equalsto;
@@ -241,8 +338,9 @@ this.directionVector[2] = Math.sin(this.ry) * this.speed;
             this.z -= strafeVectorz;
         };
     };
-    }, renderDistance: 500, 
+    }, renderDistance: 1500, 
     bullets: 25, hp: 100, rx: 0,
+    health: 100, ROOKIE_OFFBIKE: false,
 };
 
 let objects = [
@@ -256,7 +354,11 @@ let objects = [
         };
     },
     ff() {
+        if(player.ROOKIE_OFFBIKE === true) {
+this.velocity = 0;
+        };
         if(player.bike === true) {
+            this.visible = false;
             this.orgX = player.x;
             this.orgZ = player.z;
         
@@ -265,7 +367,7 @@ let objects = [
             player.bike = false;
             player.speed = 0.05;
         };
-       if(this.velocity > 0.08) {
+       if(this.velocity > 0.00001) {
         if(keys["a"] || keys["A"]) {
             this.ry += 0.014;
         };
@@ -278,19 +380,23 @@ let objects = [
     };
          player.ry = this.ry;
          player.speed = this.velocity;
+    } else {
+        this.visible = true;
     };
-    }
+    } 
 }
 ];
 let overlays = [
+
         {x: 0, y: canvas.height * 0.25, sx: canvas.width, sy: canvas.height, img: lm("./bike_on.png"), visible: false, ff() {
             if(player.bike === true) this.visible = true;
             if(player.bike === false) this.visible = false;
-        }}
+        }},
+{x: 0, y: 0, sx: canvas.width, sy: canvas.height, visible: true, c: "rgba(0,0,0," + 1 - brightness / 100 + ")", ff() {
+    this.c = "rgba(0,0,0," + (1 - (brightness / 100)) + ")";
+}},
 ];
 let text = [];
-
-
 //EVENT LISTENERS
 window.addEventListener("keydown", e => {
     keys[e.key] = true;
@@ -357,6 +463,8 @@ if(typeof o.onClick === "function") {
 
 //CALL NECESSARY FUNCTIONS/INTERVALS    
  trees();
+ trees();
+ trees();
 
  setInterval(function() {
     let x = 0;
@@ -417,7 +525,9 @@ if(keys["w"] || keys["W"] || keys["s"] || keys["S"] || keys["a"] || keys["A"] ||
 function r() {
 ctx.clearRect(0,0,canvas.width,canvas.height);
 ctx.fillStyle = "green";
-ctx.fillRect(0, canvas.height/2, canvas.width, canvas.height);
+ctx.fillRect(0,canvas.height /2, canvas.width, canvas.height);
+ctx.fillStyle = skyColor;
+ctx.fillRect(0,0,canvas.width, canvas.height /2);
 for(let i = 0; i < objects.length + 1; i++) {
     let o = objects[i];
 
@@ -431,9 +541,10 @@ return y.d - x.d;
     });
     gravity(o);
    allTransitions(o);
+   collide(o);
    if(o.physics) {
     o.friction_coefficient = 0.0000001 * o.mass;
-    o.impulse = o.mass * o.velocity;
+    o.impulse = o.mass * o.velocity * 10;
     o.friction = (o.mass * gravitational_acceleration) * o.friction_coefficient;
     o.potentialEnergy = (o.y - canvas.height/ 2) * o.mass * gravitational_acceleration;
    };
@@ -527,6 +638,7 @@ switch(ty) {
 
 //CALLING ANY OTHER SPECIAL FF'S
 player.ff();
+fly();
 ctx.fillStyle = "black";
 ctx.fillRect((canvas.width - 2) / 2, (canvas.height - 2) / 2, 4,4);
 
