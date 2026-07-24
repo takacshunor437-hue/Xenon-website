@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 
 <html>
-    <title>3Delta testshoota'</title>
+    <title>Gone Wild A1.0</title>
     <body></body>
     <script>
 
@@ -230,8 +230,13 @@ function collide(o) {
 if(player.bike === true) {
     player.bike = false;
     player.ROOKIE_OFFBIKE = true;
-    if(player.impulse > player.mass) {
-        player.health -= (player.impulse);
+    if(player.impulse > player.mass /2) {
+        if(player.health > player.impulse) {
+        player.health -= player.impulse;
+        } else {
+            let subValue = 0 + player.health;
+            player.health -= subValue;
+        };
     };
 };
 
@@ -296,6 +301,13 @@ player.equipped = "gun";
     };
 };
 
+function sleep() {
+    console.log("sleeping");
+};
+
+function tentStorage() {
+    console.log("CHECKING TENT STORAGE");
+};
 //VARIABLES
 let canvas = document.createElement("canvas");
 canvas.width = window.innerWidth;
@@ -306,11 +318,15 @@ let oneUnit_equalsto = 32; //pixels.
 let gravitational_acceleration = 9.81;
 let keys = [];
 let cpk = 0;
+let mx;
+let my;
 let cmbd = null;
 let theta = 0;
+let size = 11000;
 let a = -1;
 let b = 0;
 let brightness = 100;
+let generalMSG = "DIH";
 let skyColor = "rgba(0,0,255,1)";
 let objects_canRotate = [];
 let theta11 = 0;
@@ -374,11 +390,11 @@ this.directionVector[2] = Math.sin(this.ry) * this.speed;
         10,
         //1: THE BULLETS IN THE GUN:
         2,
-    ], 
+    ], needs: {hunger: 10, fatigue: 10, money: 10000000}
 };
 
 let objects = [
-{x: 0, y: 0, z: 0, nonGrav: true, orgX: 0, orgY: 0, orgZ: 10, sx: 0, sy: 0, tallerThanPlayer: false,orgsx: 195, orgsy: 97.5, visible: true, img: lm("./bike_off.png"),
+{x: 0, y: 0, z: 0, nonGrav: true, orgX: 0, orgY: 0, orgZ: 30, sx: 0, sy: 0, tallerThanPlayer: false,orgsx: 195, orgsy: 97.5, visible: true, img: lm("./bike_off.png"),
     a: 0.005, clickDown: true, ry: 0, velocity: 0, velocityLimit: 1.14, moveCondition() {return keys["W"] || keys["w"] && player.bike === true},
     immStop: false, mass: 20, physics: true,
     onClick() {
@@ -418,6 +434,27 @@ this.velocity = 0;
         this.visible = true;
     };
     } 
+},
+//TENT
+{x:0,y:0,z:0,sx:0,sy:0,orgX: 30, orgY: 0, orgZ: 0, orgsx: 500,orgsy: 400, tallerThanPlayer: true, img: lm("./tent.png"), visible: true,
+   nonGrav: true, coll: true, mouseOn: false,
+   onMO() {
+    generalMSG = "SLEEP? (RIGHT CLICK) - OR CHECK TENT STORAGE (LEFT CLICK)";
+   },
+   nonMO() {
+    generalMSG = "";
+   },
+   ff() {
+if(this.mouseOn === true) {
+if(cmbd === 2) {
+    sleep();
+} else {
+    if(cmbd === 0) {
+    tentStorage();
+    };
+};
+};
+   }
 }
 ];
 let overlays = [
@@ -482,8 +519,48 @@ this.dirC = 0;
 {x: 0, y: 0, sx: canvas.width, sy: canvas.height, visible: true, c: "rgba(0,0,0," + 1 - brightness / 100 + ")", ff() {
     this.c = "rgba(0,0,0," + (1 - (brightness / 100)) + ")";
 }},
+{x: 30, y: 10, sx: canvas.width * 0.10, sy: canvas.height * 0.05, unit: (canvas.width * 0.10) / 100, c: "black", visible: true},
+{x: 30, y: 10 + (canvas.height * 0.05) *2, sx: canvas.width * 0.10, sy: canvas.height * 0.05, unit: (canvas.width * 0.10) / 100, c: "black", visible: true},
+{x: 30, y: 10 + (canvas.height * 0.05 ) *4, sx: canvas.width * 0.10, sy: canvas.height * 0.05, unit: (canvas.width * 0.10) / 100, c: "black", visible: true},
+
+{x: 30, y: 10, sx: canvas.width * 0.10, sy: canvas.height * 0.05, unit: (canvas.width * 0.10) / 100, c: "red", visible: true, ff() {
+    this.sx = player.health * this.unit;
+}},
+{x: 30, y: 10 + (canvas.height * 0.05 ) *2, sx: canvas.width * 0.10, sy: canvas.height * 0.05, unit: (canvas.width * 0.10) / 100, c: "green", visible: true, ff() {
+    this.sx = player.needs.hunger * this.unit;
+}},
+{x: 30, y: 10 + (canvas.height * 0.05 ) *4, sx: canvas.width * 0.10, sy: canvas.height * 0.05, unit: (canvas.width * 0.10) / 100, c: "white", visible: true, ff() {
+    this.sx = this.unit * player.needs.fatigue;
+}},
+{x: canvas.width - size -32, y:canvas.height - canvas.height *0.1, sx:20, sy: 32, img: lm("./bullet.png"), visible: false, ff() {
+    if(player.equipped === "gun") {
+        this.visible = true;
+    }else {
+        this.visible = false;
+    };
+    this.x = canvas.width - size -this.sx - 30;
+}}
 ];
-let text = [];
+let text = [
+    {x: 30 +  canvas.width * 0.11, visible: true,y: 10 + canvas.height *0.05 - (canvas.height * 0.05 / 4), ty: "none", c: "red",f: canvas.height *0.05 + "px Comic Sans MS", text: "HEALTH"},
+    {x: 0, y: 10 + canvas.height *0.05 - (canvas.height * 0.05 / 4), ty: "none", c: "green",f: canvas.height *0.05 + "px Comic Sans MS", text: "HEALTH", ff() {
+        this.text = "CASH: " + player.needs.money;
+        this.x = canvas.width - ctx.measureText(this.text).width - 30;
+    }, visible: true},
+    {x: 30 +  canvas.width * 0.11,visible: true, y: 10 + canvas.height *0.05 - (canvas.height * 0.05 / 4) + (canvas.height * 0.05) * 2, ty: "none", c: "green",f: canvas.height *0.05 + "px Comic Sans MS", text: "HUNGER"},
+        {x: 30 +  canvas.width * 0.11, visible: true,y: 10 + canvas.height *0.05 - (canvas.height * 0.05 / 4) + (canvas.height * 0.05) * 4, ty: "none", c: "white",f: canvas.height *0.05 + "px Comic Sans MS", text: "FATIGUE"},
+        {x: 0, y: canvas.height - canvas.height * 0.05, text: player.inventory[1], c: "black", visible: true, f: canvas.height * 0.05 + "px Comic Sans MS", ty: "none", ff() {
+            if(player.equipped === "gun") {
+                this.visible = true;
+            } else {
+                this.visible = false;
+            };
+            this.text = player.inventory[1] + "/2";
+            this.x = canvas.width - ctx.measureText(this.text).width - 30;
+            size = ctx.measureText(this.text).width;
+        }},
+        {ty: "cx", x:0,y:canvas.height - 45,f: "20px Comic Sans MS", visible: true, c: "black", text: generalMSG, ff() {this.text = generalMSG;},}
+];
 //EVENT LISTENERS
 window.addEventListener("keydown", e => {
     keys[e.key] = true;
@@ -501,7 +578,8 @@ window.addEventListener("mousemove", e => {
    player.ry -= e.movementX * rotation;
    player.rx -= e.movementY * rotation;
     };
-
+mx = (canvas.width - 2) / 2;
+my = (canvas.height - 2) / 2
 });
 
 window.addEventListener("mousedown", e => {
@@ -617,6 +695,14 @@ if(keys["w"] || keys["W"] || keys["s"] || keys["S"] || keys["a"] || keys["A"] ||
 } else {
     player.speed = 0.05;
 };
+if(player.needs.hunger < 100) {
+player.needs.hunger += 0.001;
+console.log(player.needs.hunger);
+} else {
+    if(player.health > 0) {
+        player.health -= 0.1;
+    };
+};
  }, 1);
 
 //RENDER
@@ -646,6 +732,50 @@ return y.d - x.d;
     o.friction = (o.mass * gravitational_acceleration) * o.friction_coefficient;
     o.potentialEnergy = (o.y - canvas.height/ 2) * o.mass * gravitational_acceleration;
    };
+   if(typeof o.onMO === "function") {
+    if(typeof o.clickDown === "undefined") {
+   let c10 =  mx >= o.x &&
+            mx <= o.x + o.sx &&
+        my >= o.y &&
+            my <= o.y + o.sy;
+
+            if(c10) {
+                o.mouseOn = true;
+                o.onMO();
+            };
+        } else {
+              let c10 =  mx >= o.x &&
+            mx <= o.x + o.sx;
+
+            if(c10) {
+                 o.mouseOn = true;
+                o.onMO();
+            };
+        };
+   };
+
+      if(typeof o.nonMO === "function") {
+    if(typeof o.clickDown === "undefined") {
+   let c10 =  mx >= o.x &&
+            mx <= o.x + o.sx &&
+        my >= o.y &&
+            my <= o.y + o.sy;
+
+            if(!c10) {
+                 o.mouseOn = !true;
+                o.nonMO();
+            };
+        } else {
+              let c10 =  mx >= o.x &&
+            mx <= o.x + o.sx;
+
+            if(!c10) {
+                 o.mouseOn = !true;
+                o.nonMO();
+            };
+        };
+   };
+
 if(theta < 0.6 && o.visible === true && o.d < player.renderDistance) {
         if(typeof o.img === "undefined") {
             ctx.fillStyle = o.c;
@@ -712,11 +842,13 @@ for(let i = 0; i < text.length; i++) {
     let y = t.y;
     let f = t.f;
     let c = t.c;
-    let ty = t.t;
+    let ty = t.ty;
 
     let centeredx = (canvas.width - (ctx.measureText(t.text).width)) / 2;
     let centeredy = (canvas.height - (ctx.measureText(t.text).height)) / 2;
-
+if(typeof t.ff === "function") {
+    t.ff();
+};
 switch(ty) {
     case "cx":
         x = centeredx;
@@ -730,7 +862,9 @@ switch(ty) {
 };
     ctx.font = f;
     ctx.fillStyle = c;
+    if(t.visible === true) {
     ctx.fillText(t.text, x,y);
+    };
 };
 
 
