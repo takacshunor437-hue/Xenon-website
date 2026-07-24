@@ -174,7 +174,39 @@ function lm(p) {
     return img;
 };
 
+function sticks() {
 
+    let trees = objects.filter(o => o.type === "tree");
+    let amount = Math.floor(Math.random() * 3) + 1;
+    let happen = Math.floor(Math.random() * 2) + 1;
+    let check = happen === 2;
+    let random = Math.floor(Math.random() * 300) +1;
+    let tree = trees[random];
+    let stick = {
+        x: 0, y: 0, z: 0,
+        sx: 0,sy:0, orgsx: 50,
+         orgsy: 25, orgX: tree.orgX + Math.random() * 14, orgZ: tree.orgZ - Math.random() * 14,
+        c: "brown" , clickDown: true, tallerThanPlayer: false,
+        onClick() {
+            player.inventory.push("wood");
+            this.visible = false;
+            this.orgX = -100000000000000000000000000000000000000000;
+            this.orgZ = Math.PI * 100000-4;
+            this.onClick = () => {};
+        },
+        visible: true,  ff() {
+            console.log(tree);
+        }
+    };
+      
+
+
+    if(check) {
+        for(let i = 0; i < amount; i++) {
+        objects.push(stick);
+        };
+    };
+};
 
 function trees() {
     for(let i = 0; i < 100; i ++) {
@@ -190,6 +222,7 @@ function trees() {
         orgZ:  -canvas.width * 2 + Math.random() * canvas.width * 4,
         tallerThanPlayer: true,
         visible: true,
+        type: "tree",
         coll: true,
         cd: 0,
         ff() {
@@ -561,6 +594,7 @@ let text = [
         }},
         {ty: "cx", x:0,y:canvas.height - 45,f: "20px Comic Sans MS", visible: true, c: "black", text: generalMSG, ff() {this.text = generalMSG;},}
 ];
+    let v = 0;
 //EVENT LISTENERS
 window.addEventListener("keydown", e => {
     keys[e.key] = true;
@@ -640,6 +674,7 @@ window.addEventListener("mouseup",  e => {
     let x = 0;
     let z;
     let add;
+
 for(let i = 0; i < objects.length; i++) {
     let o = objects[i];
     if(typeof o.grav === "boolean") {
@@ -697,11 +732,16 @@ if(keys["w"] || keys["W"] || keys["s"] || keys["S"] || keys["a"] || keys["A"] ||
 };
 if(player.needs.hunger < 100) {
 player.needs.hunger += 0.001;
-console.log(player.needs.hunger);
 } else {
     if(player.health > 0) {
         player.health -= 0.1;
     };
+};
+
+v += 0.01;
+if(v > 100) {
+    sticks();
+    v = 0;
 };
  }, 1);
 
