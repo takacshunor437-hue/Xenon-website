@@ -12,11 +12,11 @@ function gravity(o) {
        
         o.impulse = o.fs * o.mass;
 
-        if(o.y >= (canvas.height / 2) - (o.sy / 2)) {
+        if(o.y >= groundY) {
             cd ++;
             if(cd === 1) {
 o.fs = 0;
-o.y = (canvas.height / 2) - (o.sy  / 2);
+o.y = groundY
             };
         } else {
              o.y += o.fs;
@@ -103,7 +103,11 @@ if (check > 0) {
     if(o.tallerThanPlayer === true) {
       sy1  = (canvas.height / 2) - (o.sy / 2);
     } else {
-        sy1  = (canvas.height / 2) + (o.sy / 2);
+        if(typeof o.grav === "boolean") {
+        sy1  = groundY;
+        } else {
+            sy1 = (canvas.height / 2) + (o.sy /2);
+        };
     };
 
 
@@ -186,9 +190,10 @@ function sticks() {
         x: 0, y: 0, z: 0,
         sx: 0,sy:0, orgsx: 50,
          orgsy: 25, orgX: tree.orgX + Math.random() * 14, orgZ: tree.orgZ - Math.random() * 14,
-        c: "brown" , clickDown: true, tallerThanPlayer: false,
+        c: "brown" , clickDown: true, tallerThanPlayer: false, grav: true, physics: true,
+        mass: 1, impulse: 0, fs: 0, 
         onClick() {
-            player.inventory.push("wood");
+            player.inventory.push({t: "wood", i: player.inventory.length});
             this.visible = false;
             this.orgX = -100000000000000000000000000000000000000000;
             this.orgZ = Math.PI * 100000-4;
@@ -248,14 +253,16 @@ function collide(o) {
         let dx = o.orgX - player.x;
         let dz = o.orgZ - player.z;
         
-    if(dx < 0) {
+   
+  if(dx < 0) {
         dx = -dx;
     };
+
     if(dz < 0) {
         dz = -dz;
     };
+    
         let condition = dx < 5 && dz < 5;
-        
         if(condition) {
 
               player.x -= player.directionVector[0] * player.speed * oneUnit_equalsto *2;
@@ -356,13 +363,15 @@ let my;
 let cmbd = null;
 let theta = 0;
 let size = 11000;
+let groundY = canvas.height * 0.75;
 let a = -1;
 let b = 0;
-let brightness = 100;
+let brightness = 75;
 let generalMSG = "DIH";
 let skyColor = "rgba(0,0,255,1)";
 let objects_canRotate = [];
 let theta11 = 0;
+let i_miss_them = 0;
 let player = {
     x: 0, y: canvas.width /2, z: 0,
     ry: 0, fov: 65, directionVector: [0,0,0],
@@ -479,6 +488,7 @@ this.velocity = 0;
    },
    ff() {
 if(this.mouseOn === true) {
+    if(this.d < 20) {
 if(cmbd === 2) {
     sleep();
 } else {
@@ -487,7 +497,63 @@ if(cmbd === 2) {
     };
 };
 };
+};
    }
+},
+//CHAIR
+{x: 0, y: 0, z: 0, sx: 0, sy: 0, sz: 0, orgX: 10, orgY: 0, orgZ: 0, orgsx: 60, orgsy: 90, img: lm("./chair.png"), tallerThanPlayer: false, visible: true, mouseOn: false,
+onMO() {
+    generalMSG = "SIT DOWN (CLICK!)";
+},
+nonMO() {
+    generalMSG = "";
+},
+clickDown: true, onClick() {
+    if(this.d < 20)
+    player.ry = -1.85;
+    player.x = this.orgX;
+    player.z = this.orgZ;
+    //SOON UPDATE Y POSITION (AFTER Y CALCS ARE MADE!)
+}
+},
+//CAMPFIRE
+{x: 0, y: 0, z: 0, sx: 0, sy: 0, sz: 0, orgX: 10, orgY: 0, orgZ:-10, orgsx: 50, orgsy: 50, visible: true, onImg: lm("./firePlace_burn.png"), nonImg: lm("./firePlace_noBurn.png"),
+    img: lm("./firePlace_noBurn.png"),  tallerThanPlayer: false, sticks: 0, mouseOn: false, clickDown: true, burnTime:0, ci: 0, lastBrightness: brightness, brightness_value: 15,
+    type: "fireplace",  bcd: 0, added: false, subtracted: false, burning: false,onMO() {
+    if(this.sticks > 0) {
+        generalMSG = "START FIRE (CLICK!) - AMOUNT OF WOOD: " + this.sticks;
+    } else {
+        generalMSG = "NO FIREWOOD";
+    };
+    },
+    nonMO() {
+        generalMSG = " ";
+    },
+    ff() {
+        this.y = canvas.height * 68;
+        let fw = player.inventory.filter(i => typeof i === "object" && i.t === "wood");
+        if(typeof fw[0] !== "undefined") {
+        this.ci = fw[0].i;
+        this.sticks = fw.length;
+       if(this.burnTime > 0) {
+        this.img = this.onImg;
+        this.burnTime --;
+  this.burning = true;
+       } else {
+        this.bcd = 0;
+        this.img = this.nonImg;
+        brightness = this.lastBrightness;
+        this.burning = false;
+       };
+    };
+    }, 
+    onClick() {
+        if(this.sticks > 0 && this.d < 20) {
+            delete player.inventory[this.ci];
+            this.burnTime += 1000;
+            brightness += this.brightness_value;
+        };
+    }
 }
 ];
 let overlays = [
@@ -595,6 +661,7 @@ let text = [
         {ty: "cx", x:0,y:canvas.height - 45,f: "20px Comic Sans MS", visible: true, c: "black", text: generalMSG, ff() {this.text = generalMSG;},}
 ];
     let v = 0;
+    let i_still_hurt = 0;
 //EVENT LISTENERS
 window.addEventListener("keydown", e => {
     keys[e.key] = true;
@@ -738,8 +805,8 @@ player.needs.hunger += 0.001;
     };
 };
 
-v += 0.01;
-if(v > 100) {
+v += 0.1;
+if(v > 10) {
     sticks();
     v = 0;
 };
@@ -756,6 +823,7 @@ for(let i = 0; i < objects.length + 1; i++) {
     let o = objects[i];
 
 if(typeof o === "object") {
+    i_still_hurt = 0;
     o.d = cd(o,player);
     if(typeof o.ff === "function") {
         o.ff();
@@ -814,6 +882,30 @@ return y.d - x.d;
                 o.nonMO();
             };
         };
+   };
+
+   if(typeof o.brightness_value === "number") {
+    if(o.d < 60) {
+i_still_hurt ++;
+if(i_still_hurt === 1) {
+    if(o.added === false) {
+        if(o.burning === true) {
+    brightness += o.brightness_value;
+        };
+    o.added = true;
+    o.subtracted = false;
+    };
+};
+    } else {
+        if(o.subtracted === false) {
+            if(o.burning === true) {
+brightness -= o.brightness_value;
+            };
+        o.added = false;
+o.subtracted = true;
+        };
+
+    };
    };
 
 if(theta < 0.6 && o.visible === true && o.d < player.renderDistance) {
