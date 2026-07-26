@@ -103,7 +103,8 @@ if (check > 0) {
     if(o.tallerThanPlayer === true) {
       sy1  = (canvas.height / 2) - (o.sy / 2);
     } else {
-        sy1  = groundY + ((o.orgsy / o.d) * 57.3);
+        let gpd = (oneUnit_equalsto * 200) / o.d; 
+        sy1  = groundY + gpd;
     };
 
 
@@ -186,17 +187,27 @@ function sticks() {
         x: 0, y: 0, z: 0,
         sx: 0,sy:0, orgsx: 50,
          orgsy: 25, orgX: tree.orgX + Math.random() * 14, orgZ: tree.orgZ - Math.random() * 14,
-        c: "brown" , clickDown: true, tallerThanPlayer: false, nonGrav: true, physics: true,
-        mass: 1, impulse: 0, fs: 0, 
+        c: "brown" , clickDown: true, tallerThanPlayer: false,  mouseOn: false,
+        onMO() {
+            if(this.d <  clickDistance) {
+            generalMSG = "PICK UP FIREWOOD"; 
+            };},
+            nonMO() {
+                if(this.d <  clickDistance) {
+              
+                };
+        },
         onClick() {
+            if(this.d <  clickDistance) {
             player.inventory.push({t: "wood", i: player.inventory.length});
             this.visible = false;
             this.orgX = -100000000000000000000000000000000000000000;
             this.orgZ = Math.PI * 100000-4;
             this.onClick = () => {};
+            };
         },
         visible: true,  ff() {
-            console.log(tree);
+      
         }
     };
       
@@ -320,7 +331,6 @@ function reload() {
     if(player.inventory[0] > 0 && player.inventory[1] < 2) {
     player.inventory[0] -= (2 - player.inventory[1]);
     player.inventory[1] += (2 - player.inventory[1]);
-    console.log(player.inventory[0] + " " + player.inventory[1]);
     setTimeout(function() {player.canShoot = true}, 2500);
     };
 };
@@ -358,6 +368,7 @@ let mx;
 let my;
 let cmbd = null;
 let theta = 0;
+let clickDistance = 75;
 let size = 11000;
 let groundY = canvas.height * 0.50;
 let a = -1;
@@ -432,9 +443,20 @@ this.directionVector[2] = Math.sin(this.ry) * this.speed;
 };
 
 let objects = [
-{x: 0, y: 0, z: 0, orgX: 0, orgY: 0, orgZ: 30, sx: 0, sy: 0, tallerThanPlayer: false,orgsx: 200, orgsy: 150, visible: true, img: lm("./bike_off.png"),
+    //BIKEEEEEEE
+{x: 0, y: 0, z: 0, orgX: 0, orgY: 0, orgZ: 30, sx: 0, sy: 0, tallerThanPlayer: false,orgsx: 310, orgsy: 175, visible: true, img: lm("./bike_off.png"),
+friction_coefficient: 0.025,
     a: 0.005, clickDown: true, ry: 0, velocity: 0, velocityLimit: 1.14, moveCondition() {return keys["W"] || keys["w"] && player.bike === true},
-    immStop: false, mass: 20, physics: true,
+    immStop: false, mass: 20, physics: true, mouseOn: false, onMO() {
+        if(this.d <  clickDistance) {
+            generalMSG = "RIDE BIKE";
+        };
+    },
+    nonMO() {
+if(this.d <  clickDistance) {
+ 
+};
+    },
     onClick() {
         if(typeof this.d === "number" && this.d < 20) {
         player.bike = true;
@@ -442,6 +464,7 @@ let objects = [
         };
     },
     ff() {
+        console.log(this.a);
         if(player.ROOKIE_OFFBIKE === true) {
 this.velocity = 0;
         };
@@ -463,8 +486,13 @@ this.velocity = 0;
             this.ry -= (0.00520 *2);
         };
     };
-    if(keys["s"] && keys["S"]) {
+    if(keys["s"] || keys["S"]) {
+        if(this.velocity >0) {
         this.velocity -= this.a;
+        } else {
+            player.x -= player.directionVector[0] * oneUnit_equalsto * this.velocity;
+             player.z -= player.directionVector[1] * oneUnit_equalsto * this.velocity;
+        };
     };
          player.ry = this.ry;
          player.speed = this.velocity;
@@ -477,14 +505,18 @@ this.velocity = 0;
 {x:0,y:0,z:0,sx:0,sy:0,orgX: 30, orgY: 0, orgZ: 0, orgsx: 500,orgsy: 400, tallerThanPlayer: true, img: lm("./tent.png"), visible: true,
    nonGrav: true, coll: true, mouseOn: false,
    onMO() {
+    if(this.d < clickDistance) {
     generalMSG = "SLEEP? (RIGHT CLICK) - OR CHECK TENT STORAGE (LEFT CLICK)";
-   },
+    };
+},
    nonMO() {
-    generalMSG = "";
+    if(this.d < clickDistance) {
+
+    };
    },
    ff() {
 if(this.mouseOn === true) {
-    if(this.d < 20) {
+    if(this.d <  clickDistance) {
 if(cmbd === 2) {
     sleep();
 } else {
@@ -497,40 +529,49 @@ if(cmbd === 2) {
    }
 },
 //CHAIR
-{x: 0, y: 0, z: 0, sx: 0, sy: 0, sz: 0, orgX: 10, orgY: 0, orgZ: 0, orgsx: 60, orgsy: 90, img: lm("./chair.png"), tallerThanPlayer: false, visible: true, mouseOn: false,
+{x: 0, y: 0, z: 0, sx: 0, sy: 0, sz: 0, orgX: 15, orgY: 0, orgZ: 10, orgsx: 140, orgsy: 210, img: lm("./chair.png"), tallerThanPlayer: false, visible: true, mouseOn: false,
 onMO() {
+    if(this.d <  clickDistance) {
     generalMSG = "SIT DOWN (CLICK!)";
+    };
 },
 nonMO() {
-    generalMSG = "";
+    if(this.d <  clickDistance) {
+
+    };
 },
 clickDown: true, onClick() {
-    if(this.d < 20)
+    if(this.d <  clickDistance)
     player.ry = -1.85;
     player.x = this.orgX;
     player.z = this.orgZ;
-    //SOON UPDATE Y POSITION (AFTER Y CALCS ARE MADE!)
 }
 },
 //CAMPFIRE
-{x: 0, y: 0, z: 0, sx: 0, sy: 0, sz: 0, orgX: 10, orgY: 0, orgZ:-10, orgsx: 50, orgsy: 50, visible: true, onImg: lm("./firePlace_burn.png"), nonImg: lm("./firePlace_noBurn.png"),
+{x: 0, y: 0, z: 0, sx: 0, sy: 0, sz: 0, orgX: 15, orgY: 0, orgZ:-20, orgsx: 90, orgsy: 90, visible: true, onImg: lm("./firePlace_burn.png"), nonImg: lm("./firePlace_noBurn.png"),
     img: lm("./firePlace_noBurn.png"),  tallerThanPlayer: false, sticks: 0, mouseOn: false, clickDown: true, burnTime:0, ci: 0, lastBrightness: brightness, brightness_value: 15,
     type: "fireplace",  bcd: 0, added: false, subtracted: false, burning: false, onMO() {
     if(this.sticks > 0) {
+        if(this.d <  clickDistance) {
         generalMSG = "START FIRE (CLICK!) - AMOUNT OF WOOD: " + this.sticks;
+        };
     } else {
+        if(this.d <  clickDistance) {
         generalMSG = "NO FIREWOOD";
+        };
     };
     },
     nonMO() {
-        generalMSG = " ";
+        if(this.d <  clickDistance) {
+   
+        };
     },
     ff() {
-        this.y = canvas.height * 68;
         let fw = player.inventory.filter(i => typeof i === "object" && i.t === "wood");
         if(typeof fw[0] !== "undefined") {
         this.ci = fw[0].i;
         this.sticks = fw.length;
+        };
        if(this.burnTime > 0) {
         this.img = this.onImg;
         this.burnTime --;
@@ -540,17 +581,18 @@ clickDown: true, onClick() {
         this.img = this.nonImg;
         brightness = this.lastBrightness;
         this.burning = false;
-       };
+       
     };
     }, 
     onClick() {
-        if(this.sticks > 0 && this.d < 20) {
+        if(this.sticks > 0 && this.d <  clickDistance) {
             delete player.inventory[this.ci];
+            this.sticks --;
             this.burnTime += 1000;
             brightness += this.brightness_value;
         };
     }
-}
+},
 ];
 let overlays = [
 
@@ -815,7 +857,7 @@ ctx.fillStyle = "green";
 ctx.fillRect(0,canvas.height /2, canvas.width, canvas.height);
 ctx.fillStyle = skyColor;
 ctx.fillRect(0,0,canvas.width, canvas.height /2);
-for(let i = 0; i < objects.length + 1; i++) {
+for(let i = 0; i < objects.length; i++) {
     let o = objects[i];
 
 if(typeof o === "object") {
