@@ -103,11 +103,7 @@ if (check > 0) {
     if(o.tallerThanPlayer === true) {
       sy1  = (canvas.height / 2) - (o.sy / 2);
     } else {
-        if(typeof o.grav === "boolean") {
-        sy1  = groundY;
-        } else {
-            sy1 = (canvas.height / 2) + (o.sy /2);
-        };
+        sy1  = groundY + ((o.orgsy / o.d) * 57.3);
     };
 
 
@@ -190,7 +186,7 @@ function sticks() {
         x: 0, y: 0, z: 0,
         sx: 0,sy:0, orgsx: 50,
          orgsy: 25, orgX: tree.orgX + Math.random() * 14, orgZ: tree.orgZ - Math.random() * 14,
-        c: "brown" , clickDown: true, tallerThanPlayer: false, grav: true, physics: true,
+        c: "brown" , clickDown: true, tallerThanPlayer: false, nonGrav: true, physics: true,
         mass: 1, impulse: 0, fs: 0, 
         onClick() {
             player.inventory.push({t: "wood", i: player.inventory.length});
@@ -363,7 +359,7 @@ let my;
 let cmbd = null;
 let theta = 0;
 let size = 11000;
-let groundY = canvas.height * 0.75;
+let groundY = canvas.height * 0.50;
 let a = -1;
 let b = 0;
 let brightness = 75;
@@ -436,7 +432,7 @@ this.directionVector[2] = Math.sin(this.ry) * this.speed;
 };
 
 let objects = [
-{x: 0, y: 0, z: 0, nonGrav: true, orgX: 0, orgY: 0, orgZ: 30, sx: 0, sy: 0, tallerThanPlayer: false,orgsx: 195, orgsy: 97.5, visible: true, img: lm("./bike_off.png"),
+{x: 0, y: 0, z: 0, orgX: 0, orgY: 0, orgZ: 30, sx: 0, sy: 0, tallerThanPlayer: false,orgsx: 200, orgsy: 150, visible: true, img: lm("./bike_off.png"),
     a: 0.005, clickDown: true, ry: 0, velocity: 0, velocityLimit: 1.14, moveCondition() {return keys["W"] || keys["w"] && player.bike === true},
     immStop: false, mass: 20, physics: true,
     onClick() {
@@ -519,7 +515,7 @@ clickDown: true, onClick() {
 //CAMPFIRE
 {x: 0, y: 0, z: 0, sx: 0, sy: 0, sz: 0, orgX: 10, orgY: 0, orgZ:-10, orgsx: 50, orgsy: 50, visible: true, onImg: lm("./firePlace_burn.png"), nonImg: lm("./firePlace_noBurn.png"),
     img: lm("./firePlace_noBurn.png"),  tallerThanPlayer: false, sticks: 0, mouseOn: false, clickDown: true, burnTime:0, ci: 0, lastBrightness: brightness, brightness_value: 15,
-    type: "fireplace",  bcd: 0, added: false, subtracted: false, burning: false,onMO() {
+    type: "fireplace",  bcd: 0, added: false, subtracted: false, burning: false, onMO() {
     if(this.sticks > 0) {
         generalMSG = "START FIRE (CLICK!) - AMOUNT OF WOOD: " + this.sticks;
     } else {
