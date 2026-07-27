@@ -69,6 +69,16 @@ function draw_line(point, point1, object) {
     ctx.stroke();
 };
 
+function drawRect(p,p1,o) {
+    let colC = 0;
+    let rowC = 0
+
+    for(let x = 0; x <  o.sy; x ++) {
+        rowC ++;
+draw_line({x: p.x, y: p.y + rowC}, {x: p1.x, y: p1.y + rowC},o);
+    };
+};
+
 
 
 function allTransitions(o) {
@@ -366,6 +376,8 @@ let keys = [];
 let cpk = 0;
 let mx;
 let my;
+let time = 10;
+let dayTime = " ";
 let cmbd = null;
 let theta = 0;
 let clickDistance = 75;
@@ -373,10 +385,17 @@ let size = 11000;
 let groundY = canvas.height * 0.50;
 let a = -1;
 let b = 0;
-let brightness = 75;
-let generalMSG = "DIH";
+let brightness = 90;
+let generalMSG = "";
 let skyColor = "rgba(0,0,255,1)";
-let objects_canRotate = [];
+let objects_canRotate = [
+    {orgX: 1, orgZ: 1, orgY: 1,c: "red", x:0,y:0,z:0, orgsx: 25,orgsy: 25, sx: 0,sy: 0,p: [
+        {x: 0,y:0,z:0,orgX: 0,orgY: 0,orgZ:0, theta: 0,d: 0,},
+        {x: 0,y:0,z:0,orgX: 25,orgY: 0,orgZ:0, theta: 0,d: 0,},
+    ],ry: 0, visible: true, ff() {
+
+    }, tallerThanPlayer: false}
+];
 let theta11 = 0;
 let i_miss_them = 0;
 let player = {
@@ -464,7 +483,6 @@ if(this.d <  clickDistance) {
         };
     },
     ff() {
-        console.log(this.a);
         if(player.ROOKIE_OFFBIKE === true) {
 this.velocity = 0;
         };
@@ -696,7 +714,11 @@ let text = [
             this.x = canvas.width - ctx.measureText(this.text).width - 30;
             size = ctx.measureText(this.text).width;
         }},
-        {ty: "cx", x:0,y:canvas.height - 45,f: "20px Comic Sans MS", visible: true, c: "black", text: generalMSG, ff() {this.text = generalMSG;},}
+        {ty: "NONE BRUV", x:0,y:canvas.height - 45,f: "20px Comic Sans MS", visible: true, c: "black", text: generalMSG, ff() {
+        this.text = generalMSG;
+        let thissx= ctx.measureText(this.text).width;
+     this.x = (canvas.width - thissx) / 2;
+        },}
 ];
     let v = 0;
     let i_still_hurt = 0;
@@ -848,6 +870,39 @@ if(v > 10) {
     sticks();
     v = 0;
 };
+if(dayTime === "morning") {
+    if(brightness < 95) {
+        brightness += 5;
+    } else {
+        brightness = 94;
+    };
+};
+if(dayTime === "night") {
+    if(brightness > 30) {
+        brightness -= 5;
+    } else {
+        brightness = 31;
+    };
+};
+if(time < 23) {
+    time += 0.1;
+    if(time < 6 && time >= 0) {
+        dayTime = "night";
+    };
+    if(time > 6 && time < 12) {
+        dayTime = "morning";
+    };
+    if(time > 12 && time < 19) {
+        dayTime = "afternoon";
+    };
+    if(time > 19 && time < 24) {
+        dayTime = "night";
+    };
+} else {
+    time = 0;
+};
+
+
  }, 1);
 
 //RENDER
@@ -976,7 +1031,8 @@ for(let i = 0; i < objects_canRotate.length; i++) {
         allTransitions_rotated(o);
 if(o.p[a].theta < 0.6 && o.visible === true) {
     if(typeof o.img === "undefined") {
-        draw_line(o.p[0], o.p[1], o);
+        drawRect(o.p[0], o.p[1], o);
+   
 
     } else {
 
@@ -1043,7 +1099,7 @@ player.ff();
 fly();
 ctx.fillStyle = "black";
 ctx.fillRect((canvas.width - 2) / 2, (canvas.height - 2) / 2, 4,4);
-
+console.log(dayTime === "morning");
     requestAnimationFrame(r);
 
 };
