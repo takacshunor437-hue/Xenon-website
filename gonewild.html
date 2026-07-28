@@ -82,7 +82,7 @@ draw_line({x: p.x, y: p.y + rowC}, {x: p1.x, y: p.y + rowC},o);
 
 
 function allTransitions(o) {
-  if(o.d < player.renderDistance) {
+  if(o.d < player.renderDistance || typeof o.type === "string" && o.type === "star") {
     let newX = (o.orgX - player.x); 
 let newZ = (o.orgZ - player.z);
 let direction = [o.orgX , o.orgZ ];
@@ -116,7 +116,9 @@ if (check > 0) {
         let gpd = (oneUnit_equalsto * 200) / o.d; 
         sy1  = groundY + gpd;
     };
-
+if(typeof o.hasOwnY === "boolean") {
+    sy1 = o.orgY;
+};
 
 
 o.x = sx1;
@@ -362,6 +364,28 @@ player.equipped = "gun";
 function tentStorage() {
     console.log("CHECKING TENT STORAGE");
 };
+
+function stars() {
+    console.log("happened");
+    for(let i = 0; i< 100;i++){
+        objects.push({
+            x:0,y:0,z:0,
+            sx:0,sy:0,
+            orgsx: 25,orgsy: 25,
+            orgX: -(Math.random() * canvas.width * 2) + ((Math.random() * canvas.width * 2) *2), orgY: (canvas.height /2 - 100) * Math.random(), orgZ:  -(Math.random() * canvas.width * 2) + ((Math.random() * canvas.width * 2) *2),
+            d: 0, visible: true, c: "white", nonGrav: true,ff()  {
+                console.log(this);
+                if(time > 19.5 || time < 5.5) {
+                    this.visible = true;
+                }else {
+                    this.visible = false;
+                };
+            }, 
+            hasOwnY: true, tallerThanPlayer: "notabooleanXD", type: "star"
+        });
+    };
+
+};
 //VARIABLES
 let canvas = document.createElement("canvas");
 canvas.width = window.innerWidth;
@@ -374,7 +398,7 @@ let keys = [];
 let cpk = 0;
 let mx;
 let my;
-let time = 10;
+let time = 19.6;
 let dayTime = " ";
 let cmbd = null;
 let theta = 0;
@@ -866,6 +890,7 @@ window.addEventListener("mouseup",  e => {
  trees();
  trees();
  trees();
+stars();
 
  setInterval(function() {
     let x = 0;
@@ -972,12 +997,17 @@ if(time > 18 && time < 24) {
 if(dayTime === "morning" || dayTime === "afternoon") {
     if(brightness < 75) {
         brightness += 0.1;
+    }else {
+        skyColor = "blue";
     };
 };
-if(dayTime === "night") {
 
+if(dayTime === "night") {
+    skyColor = "rgba(0, 0, 95, 1)";
     if(brightness > 20) {
         brightness -= 0.01;
+    } else {
+    
     };
 };
 
@@ -1180,7 +1210,6 @@ player.ff();
 fly();
 ctx.fillStyle = "black";
 ctx.fillRect((canvas.width - 2) / 2, (canvas.height - 2) / 2, 4,4);
-console.log(dayTime + " " + Math.floor(brightness) + " " + time);
     requestAnimationFrame(r);
 
 };
