@@ -75,7 +75,7 @@ function drawRect(p,p1,o) {
 
     for(let x = 0; x <  o.sy; x ++) {
         rowC ++;
-draw_line({x: p.x, y: p.y + rowC}, {x: p1.x, y: p1.y + rowC},o);
+draw_line({x: p.x, y: p.y + rowC}, {x: p1.x, y: p.y + rowC},o);
     };
 };
 
@@ -357,9 +357,7 @@ player.equipped = "gun";
     };
 };
 
-function sleep() {
-    console.log("sleeping");
-};
+
 
 function tentStorage() {
     console.log("CHECKING TENT STORAGE");
@@ -385,16 +383,24 @@ let size = 11000;
 let groundY = canvas.height * 0.50;
 let a = -1;
 let b = 0;
-let brightness = 90;
+let brightness = 75;
 let generalMSG = "";
 let skyColor = "rgba(0,0,255,1)";
 let objects_canRotate = [
-    {orgX: 1, orgZ: 1, orgY: 1,c: "red", x:0,y:0,z:0, orgsx: 25,orgsy: 25, sx: 0,sy: 0,p: [
-        {x: 0,y:0,z:0,orgX: 0,orgY: 0,orgZ:0, theta: 0,d: 0,},
-        {x: 0,y:0,z:0,orgX: 25,orgY: 0,orgZ:0, theta: 0,d: 0,},
+    /*
+    {orgX: 45, orgZ: 1, orgY: 1,c: "red", x:0,y:0,z:0, orgsx: 25,orgsy: 25, sx: 0,sy: 0,p: [
+        {x: 0,y:0,z:0,orgX: 45,orgY: 0,orgZ:1, theta: 0,d: 0,},
+        {x: 0,y:0,z:0,orgX: 70 - 12.5,orgY: 0,orgZ:1, theta: 0,d: 0,},
     ],ry: 0, visible: true, ff() {
 
-    }, tallerThanPlayer: false}
+    }},
+        {orgX: 45 - 12.5, orgZ: 1 - 12.5, orgY: 1,c: "red", x:0,y:0,z:0, orgsx: 25,orgsy: 25, sx: 0,sy: 0,p: [
+        {x: 0,y:0,z:0,orgX: 45 - 12.5,orgY: 0,orgZ:1 - 12.5, theta: 0,d: 0,},
+        {x: 0,y:0,z:0,orgX: 70 - 12.5,orgY: 0,orgZ:0, theta: 0,d: 0,},
+    ],ry: Math.PI /2, visible: true, ff() {
+
+    }},
+    */
 ];
 let theta11 = 0;
 let i_miss_them = 0;
@@ -405,7 +411,23 @@ let player = {
     a: 0.02,
     bike: false, mass: 77.5, strafeVectorx: 0, 
     strafeVectorz: 0, canShoot: true, equipped: "gun",
+    cds: 0, cds1: 0,
     ff() {
+        if(this.needs.fatigue > 65) {
+            this.cds1 = 0;
+            this.cds ++;
+            if(this.cds ===1) {
+                this.speed = 0.005;
+                this.a = 0;
+            };
+        } else {
+            this.cds = 0;
+            this.cds1 ++;
+            if(this.cds1 === 1) {
+                this.speed = 0.05;
+                this.a = 0.02;
+            };
+        };
         if(this.equipped === "gun" && this.inventory[1] > 0) {
             this.canShoot = true;
         } else {
@@ -458,7 +480,7 @@ this.directionVector[2] = Math.sin(this.ry) * this.speed;
         10,
         //1: THE BULLETS IN THE GUN:
         2,
-    ], needs: {hunger: 10, fatigue: 10, money: 10000000}
+    ], needs: {hunger: 10, fatigue: 100, money: 10000000}, sleeping: false,
 };
 
 let objects = [
@@ -536,7 +558,34 @@ this.velocity = 0;
 if(this.mouseOn === true) {
     if(this.d <  clickDistance) {
 if(cmbd === 2) {
-    sleep();
+    player.sleeping = true;
+     if(player.needs.fatigue > 1) {
+for(let i = 0; i < brightness *10000; i++) {
+            if(brightness > 0.0001) {
+brightness -= 0.0001;
+} else {
+    break;
+};
+};
+
+
+
+
+ setTimeout(function() {
+    time += player.needs.fatigue / 10;
+for(let i = 0; i < brightness *10000; i++) {
+            if(brightness < 75) {
+brightness += 0.0001;
+} else {
+    break;
+};
+};
+      player.needs.fatigue = 0;
+player.sleeping = false;
+ }, 5000);
+
+  };
+
 } else {
     if(cmbd === 0) {
     tentStorage();
@@ -568,7 +617,7 @@ clickDown: true, onClick() {
 //CAMPFIRE
 {x: 0, y: 0, z: 0, sx: 0, sy: 0, sz: 0, orgX: 15, orgY: 0, orgZ:-20, orgsx: 90, orgsy: 90, visible: true, onImg: lm("./firePlace_burn.png"), nonImg: lm("./firePlace_noBurn.png"),
     img: lm("./firePlace_noBurn.png"),  tallerThanPlayer: false, sticks: 0, mouseOn: false, clickDown: true, burnTime:0, ci: 0, lastBrightness: brightness, brightness_value: 15,
-    type: "fireplace",  bcd: 0, added: false, subtracted: false, burning: false, onMO() {
+    type: "fireplace",  bcd: 0, added: false, subtracted: false, burning: false, cdf: 0,onMO() {
     if(this.sticks > 0) {
         if(this.d <  clickDistance) {
         generalMSG = "START FIRE (CLICK!) - AMOUNT OF WOOD: " + this.sticks;
@@ -591,13 +640,17 @@ clickDown: true, onClick() {
         this.sticks = fw.length;
         };
        if(this.burnTime > 0) {
+        this.cdf = 0;
         this.img = this.onImg;
         this.burnTime --;
   this.burning = true;
        } else {
         this.bcd = 0;
         this.img = this.nonImg;
+        this.cdf ++;
+        if(this.cdf === 1) {
         brightness = this.lastBrightness;
+        };
         this.burning = false;
        
     };
@@ -634,9 +687,17 @@ let overlays = [
                     this.y = canvas.height - canvas.height / 7;
                      player.inventory[1] --;
                     if(Math.floor(Math.random() * 2) + 1===1) {
+                        if(player.needs.fatigue < 65) {
                     player.ry +=  Math.random() / 5;
+                        }else {
+                            player.ry +=  Math.random() / 2;
+                        };
                     } else {
+                        if(player.needs.fatigue < 65) {
                          player.ry +=  -Math.random() / 5;
+                        } else {
+                            player.ry +=  -Math.random() / 2;
+                        };
                     };
                     } else {
                         this.y = canvas.height - canvas.height / 3;
@@ -656,9 +717,17 @@ this.dirC = 0;
                     };
                 
                     if(this.dir === true) {
+                        if(player.needs.fatigue < 65) {
                         this.x += 2;
+                        } else {
+                            this.x += 0.5;
+                        };
                     } else {
+                        if(player.needs.fatigue < 65) {
                         this.x -= 2;
+                        } else {
+                            this.x -= 0.5;
+                        };
                     };
                 };
                 if(!keys["w"] && !keys["W"] && !keys["s"] && !keys["S"] && !keys["a"] && !keys["A"] && !keys["d"] && !keys["D"]) {
@@ -671,9 +740,10 @@ this.dirC = 0;
                 };
             }
         },
-{x: 0, y: 0, sx: canvas.width, sy: canvas.height, visible: true, c: "rgba(0,0,0," + 1 - brightness / 100 + ")", ff() {
-    this.c = "rgba(0,0,0," + (1 - (brightness / 100)) + ")";
-}},
+        {x: 0, y: 0, sx: canvas.width, sy: canvas.height, visible: true, c: "black", ff() {
+            this.c = "rgba(0,0,0," + (1 - (brightness /100)) + ")";
+        }},
+
 {x: 30, y: 10, sx: canvas.width * 0.10, sy: canvas.height * 0.05, unit: (canvas.width * 0.10) / 100, c: "black", visible: true},
 {x: 30, y: 10 + (canvas.height * 0.05) *2, sx: canvas.width * 0.10, sy: canvas.height * 0.05, unit: (canvas.width * 0.10) / 100, c: "black", visible: true},
 {x: 30, y: 10 + (canvas.height * 0.05 ) *4, sx: canvas.width * 0.10, sy: canvas.height * 0.05, unit: (canvas.width * 0.10) / 100, c: "black", visible: true},
@@ -801,7 +871,6 @@ window.addEventListener("mouseup",  e => {
     let x = 0;
     let z;
     let add;
-
 for(let i = 0; i < objects.length; i++) {
     let o = objects[i];
     if(typeof o.grav === "boolean") {
@@ -854,15 +923,27 @@ if(keys["w"] || keys["W"] || keys["s"] || keys["S"] || keys["a"] || keys["A"] ||
     if(player.speed < 0.1455345) {
     player.speed += (player.a / 10);
     };
+    if(player.needs.hunger < 100) {
+player.needs.hunger += 0.0001;
+} else {
+    if(player.health > 0) {
+        player.health -= 0.01;
+    };
+};
 } else {
     player.speed = 0.05;
+
 };
+
 if(player.needs.hunger < 100) {
 player.needs.hunger += 0.001;
 } else {
     if(player.health > 0) {
-        player.health -= 0.1;
+        player.health -= 0.01;
     };
+};
+if(player.needs.fatigue < 100) {
+    player.needs.fatigue += 0.0015;
 };
 
 v += 0.1;
@@ -870,38 +951,35 @@ if(v > 10) {
     sticks();
     v = 0;
 };
-if(dayTime === "morning") {
-    if(brightness < 95) {
-        brightness += 5;
-    } else {
-        brightness = 94;
+if(time < 24) {
+    time += 0.001;
+}else {
+    time = 0;
+};
+if(time > 0 && time < 4) {
+    dayTime = "night";
+};
+if(time > 4 && time < 12) {
+    dayTime = "morning";
+};
+if(time > 12 && time < 18) {
+    dayTime = "afternoon";
+};
+if(time > 18 && time < 24) {
+    dayTime = "night";
+};
+
+if(dayTime === "morning" || dayTime === "afternoon") {
+    if(brightness < 75) {
+        brightness += 0.1;
     };
 };
 if(dayTime === "night") {
-    if(brightness > 30) {
-        brightness -= 5;
-    } else {
-        brightness = 31;
-    };
-};
-if(time < 23) {
-    time += 0.1;
-    if(time < 6 && time >= 0) {
-        dayTime = "night";
-    };
-    if(time > 6 && time < 12) {
-        dayTime = "morning";
-    };
-    if(time > 12 && time < 19) {
-        dayTime = "afternoon";
-    };
-    if(time > 19 && time < 24) {
-        dayTime = "night";
-    };
-} else {
-    time = 0;
-};
 
+    if(brightness > 20) {
+        brightness -= 0.01;
+    };
+};
 
  }, 1);
 
@@ -976,7 +1054,7 @@ return y.d - x.d;
             };
         };
    };
-
+if(player.sleeping == false) {
    if(typeof o.brightness_value === "number") {
     if(o.d < 60) {
 i_still_hurt ++;
@@ -1000,6 +1078,7 @@ o.subtracted = true;
 
     };
    };
+};
 
 if(theta < 0.6 && o.visible === true && o.d < player.renderDistance) {
         if(typeof o.img === "undefined") {
@@ -1029,11 +1108,9 @@ for(let i = 0; i < objects_canRotate.length; i++) {
             p.d = Math.sqrt(a + b);
         };
         allTransitions_rotated(o);
-if(o.p[a].theta < 0.6 && o.visible === true) {
+if(o.p[a].theta < 0.6 + (o.sx * (Math.PI / 180)) && o.visible === true) {
     if(typeof o.img === "undefined") {
         drawRect(o.p[0], o.p[1], o);
-   
-
     } else {
 
     };
@@ -1044,6 +1121,8 @@ if(a === 1) {
 };
     };
 };
+
+
 
 //FOR LOOP OF OVERLAYS
 for(let i = 0; i < overlays.length; i++) {
@@ -1095,11 +1174,13 @@ switch(ty) {
 
 
 //CALLING ANY OTHER SPECIAL FF'S
+if(player.sleeping === false) {
 player.ff();
+};
 fly();
 ctx.fillStyle = "black";
 ctx.fillRect((canvas.width - 2) / 2, (canvas.height - 2) / 2, 4,4);
-console.log(dayTime === "morning");
+console.log(dayTime + " " + Math.floor(brightness) + " " + time);
     requestAnimationFrame(r);
 
 };
