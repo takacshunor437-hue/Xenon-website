@@ -20,8 +20,88 @@ o.y = groundY
             };
         } else {
              o.y += o.fs;
+             
         };
     };
+};
+
+function deer(x,y,z) {
+    objects.push({
+        x:0,y:0,z:0,
+        sx:0,sy:0,orgX: x, orgY: y, orgZ: z,
+        orgsx: 350, orgsy: 265, c: "red",
+        coll: true, state: "w", tallerThanPlayer: true,
+        visible: true, dir: 1, dirC: 0, velocity: 0.04,ff() {
+            this.velocity = 0.35;
+            console.log(this);
+            if(this.state === "w") {
+this.dirC ++;
+if(this.dirC > 750) {
+    this.dirC = 0;
+    this.dir = Math.floor(Math.random() * 8) +1;
+};
+
+switch(this.dir) {
+    case 1:
+        console.log("happnes.");
+        this.orgX += this.velocity;
+        break;
+        case 2: 
+        this.orgX -= this.velocity;
+        break;
+        case 3:
+            this.orgZ += this.velocity;
+            break;
+            case 4:
+                this.orgZ -= this.velocity;
+                break;
+                case 5:
+                    this.orgX +=  this.velocity;
+                    this.orgZ += this.velocity;
+                    break;
+                    case 6:
+                        this.orgX -= this.velocity;
+                        this.orgZ -= this.velocity;
+                        break;
+                        case 7:
+                            this.orgX -= this.velocity;
+                            this.orgZ += this.velocity;
+                            break;
+                            case 8:
+                                this.orgX += this.velocity;
+                                this.orgZ -= this.velocity;
+                                break;
+                                if(typeof this.d === "number") {
+                                    if(this.d < 100) {
+                                        if(cmbd === 0 && player.equipped === "gun" && player.inventory[1] > 0) {
+                                            this.state = "s";
+                                        };
+                                        if(player.makingNoise === true) {
+this.state = "s";
+                                        };
+                                    };
+                                };
+};
+            };
+            if(this.state === "s") {
+                if(this.d < 550) {
+                if(this.orgX > player.x) this.orgX += this.velocity;
+                if(this.orgX < player.x) this.orgX -= this.velocity;
+                if(this.orgZ > player.z) this.orgZ += this.velocity;
+                if(this.orgZ < player.z) this.orgZ -= this.velocity;
+                } else {
+                    this.state = "w";
+                };
+            };
+        }, onClick() {
+            if(player.equipped === "gun" && cmbd === 0 &&player.inventory[1] > 0) {
+                this.visible = false;
+                this.ff = () => {};
+                newMeat(this.orgX,this.orgY,this.orgZ);
+                this.orgX = -110000000;
+            };
+        }
+    });
 };
 
 function newMeat(x,y,z) {
@@ -199,7 +279,7 @@ function sticks() {
         x: 0, y: 0, z: 0,
         sx: 0,sy:0, orgsx: 50,
          orgsy: 25, orgX: tree.orgX + Math.random() * 14, orgZ: tree.orgZ - Math.random() * 14,
-        c: "brown" , clickDown: true, tallerThanPlayer: false,  mouseOn: false,
+        c: "brown" , clickDown: true, tallerThanPlayer: false,  mouseOn: false, ncd:0,
         onMO() {
             if(this.d <  clickDistance) {
             generalMSG = "PICK UP FIREWOOD"; 
@@ -219,7 +299,20 @@ function sticks() {
             };
         },
         visible: true,  ff() {
-      
+      if(this.d < 15) {
+        player.makingNoise  = true;
+        this.visible = false;
+        this.tallerThanPlayer = "NOTABOOLEANLOL";
+        this.hasOwnY = true;
+        this.orgY = -100000000000000000;
+        this.onClick = () => {
+            console.log("DUMMY.");
+        };
+        this.ncd ++ ;
+        if(this.ncd === 3) {
+            player.makingNoise = false;
+        };
+      };
         }
     };
       
@@ -374,7 +467,6 @@ function stars() {
             orgsx: 25,orgsy: 25,
             orgX: -(Math.random() * canvas.width * 2) + ((Math.random() * canvas.width * 2) *2), orgY: (canvas.height /2 - 100) * Math.random(), orgZ:  -(Math.random() * canvas.width * 2) + ((Math.random() * canvas.width * 2) *2),
             d: 0, visible: true, c: "white", nonGrav: true,ff()  {
-                console.log(this);
                 if(time > 19.5 || time < 5.5) {
                     this.visible = true;
                 }else {
@@ -398,9 +490,10 @@ let keys = [];
 let cpk = 0;
 let mx;
 let my;
-let time = 19.6;
+let time = 8;
 let dayTime = " ";
 let cmbd = null;
+let deers = 0;
 let theta = 0;
 let clickDistance = 75;
 let size = 11000;
@@ -427,6 +520,7 @@ let objects_canRotate = [
     */
 ];
 let theta11 = 0;
+
 let i_miss_them = 0;
 let player = {
     x: 0, y: canvas.width /2, z: 0,
@@ -435,7 +529,7 @@ let player = {
     a: 0.02,
     bike: false, mass: 77.5, strafeVectorx: 0, 
     strafeVectorz: 0, canShoot: true, equipped: "gun",
-    cds: 0, cds1: 0,
+    cds: 0, cds1: 0, makingNoise: false,
     ff() {
         if(this.needs.fatigue > 65) {
             this.cds1 = 0;
@@ -816,6 +910,7 @@ let text = [
 ];
     let v = 0;
     let i_still_hurt = 0;
+        let vzs = 0;
 //EVENT LISTENERS
 window.addEventListener("keydown", e => {
     keys[e.key] = true;
@@ -896,6 +991,7 @@ stars();
     let x = 0;
     let z;
     let add;
+
 for(let i = 0; i < objects.length; i++) {
     let o = objects[i];
     if(typeof o.grav === "boolean") {
@@ -1010,7 +1106,15 @@ if(dayTime === "night") {
     
     };
 };
-
+vzs ++;
+console.log(vzs);
+if(vzs === 1000) {
+    deers ++;
+    if(deers < 20) {
+deer(0,0,0,);
+    };
+    vzs = 0;
+};
  }, 1);
 
 //RENDER
