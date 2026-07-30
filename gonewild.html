@@ -29,12 +29,14 @@ function deer(x,y,z) {
     objects.push({
         x:0,y:0,z:0,
         sx:0,sy:0,orgX: x, orgY: y, orgZ: z,
-        orgsx: 350, orgsy: 265, c: "red",
+        orgsx: 350, orgsy: 265, normImg: lm("./deer.png"), sImg: lm("./deer_scared.png"),
+        img: lm("./deer.png"),
         coll: true, state: "w", tallerThanPlayer: true,
         visible: true, dir: 1, dirC: 0, velocity: 0.04,ff() {
             this.velocity = 0.35;
             console.log(this);
             if(this.state === "w") {
+                this.img = this.normImg;
 this.dirC ++;
 if(this.dirC > 750) {
     this.dirC = 0;
@@ -84,6 +86,7 @@ this.state = "s";
 };
             };
             if(this.state === "s") {
+                this.img = this.sImg;
                 if(this.d < 550) {
                 if(this.orgX > player.x) this.orgX += this.velocity;
                 if(this.orgX < player.x) this.orgX -= this.velocity;
@@ -119,9 +122,13 @@ function newMeat(x,y,z) {
         clickDown: true,
         type: "meat",
         decayV: 0,
+        mouseOn: false,
         parasite: 1 + Math.floor(Math.random() * 2),
+        onMO() {
+            generalMSG = "PICK UP MEAT";
+        },
         onClick() {
-            console.log("MEAT PICKED TF UP");
+          player.inventory.push(this);
             this.visible = false;
         },
         ff() {
@@ -502,6 +509,7 @@ let a = -1;
 let b = 0;
 let brightness = 75;
 let generalMSG = "";
+let meats;
 let skyColor = "rgba(0,0,255,1)";
 let objects_canRotate = [
     /*
@@ -598,7 +606,7 @@ this.directionVector[2] = Math.sin(this.ry) * this.speed;
         10,
         //1: THE BULLETS IN THE GUN:
         2,
-    ], needs: {hunger: 10, fatigue: 100, money: 10000000}, sleeping: false,
+    ], needs: {hunger: 10, fatigue: 10, money: 10}, sleeping: false,
 };
 
 let objects = [
@@ -677,7 +685,7 @@ if(this.mouseOn === true) {
     if(this.d <  clickDistance) {
 if(cmbd === 2) {
     player.sleeping = true;
-     if(player.needs.fatigue > 1) {
+     if(player.needs.fatigue > 45) {
 for(let i = 0; i < brightness *10000; i++) {
             if(brightness > 0.0001) {
 brightness -= 0.0001;
@@ -782,6 +790,101 @@ clickDown: true, onClick() {
         };
     }
 },
+//MERCHANT TENT
+{
+    x: 0, y: 0, z: 0,
+    sx: 0, sy: 0, orgX: canvas.width,
+    orgZ: canvas.width, orgY: 0, orgsx: 500,
+    orgsy: 400, tallerThanPlayer: true, img: lm("./Mtent.png"),
+    coll: true, visible: true
+},
+//MERCHANT
+{
+    x:0,y:0,z:0,
+    sx:0,sy:0,orgX: canvas.width,
+    orgZ: canvas.width - 25,orgY: 0,
+    orgsx: 250, orgsy: 400, img: lm("./merchant.png"),
+    visible: true, tallerThanPlayer: true, mouseOn: false,
+    onMO() {
+        if(meats.length > 0) {
+        generalMSG = "SELL MEAT FROM YOUR BACKPACK TO VIKTOR";
+        } else {
+            generalMSG = "YOU HAVE NO MEAT TO SELL.";
+        };
+    }, greetCd: 0, ff() {
+        if(this.d < 300) {
+            this.greetCd ++;
+            if(this.greetCd === 1) {
+            let greetSeed = 1 + Math.floor(Math.random() * 4);
+         switch(greetSeed) {
+            case 1:
+                generalMSG = "VIKTOR: 'WASSUP?'";
+                break;
+                case 2:
+                    generalMSG = "VIKTOR: 'HELLO! WHAT DO YOU NEED?'";
+                    break;
+                    case 3:
+                        generalMSG = "VIKTOR: 'HI! WHAT DID YOU BRING ME TODAY?'";
+                        break;
+                        case 4:
+                            generalMSG = "VIKTOR: 'HELLO! WANNA SEE HOW I PROVED THE ILLUMINATI LIVES IN THE SATURN HEXAGON?'";
+                            break;
+         };
+            };
+        } else {
+            this.greetCd = 0;
+        };
+    }, 
+    onClick() {
+        if(meats.length > 0) {
+          let subject = meats[0];
+
+          if(subject.parasite === 1) {
+            if(subject.decayV < 10) {
+if(Math.floor(Math.random() * 2) + 1 === 1) {
+    generalMSG = "VIKTOR: 'WAAA BRO THAT IS SOME GOOD MEAT! JUST LOOKING AT IT MAKES ME HUNGRY! ...OR GREEDY.'";
+    player.needs.money += 20;
+} else {
+    generalMSG = "VIKTOR: 'WHOA! THAT'S SO FRESH BRO IS THIS THING STILL ALIVE???'";
+    player.needs.money += 20;
+};
+            };
+if(subject.decayV > 10 && subject.decayV < 30) {
+    if(Math.floor(Math.random() * 2) +  1 === 1) {
+    generalMSG = "VIKTOR: 'HEEEY THATS PRETTY GOOD! I'M GONNA PAY YOU GOOD FOR THAT!'";
+    player.needs.money += 10;
+    } else {
+        generalMSG = "VIKTOR: 'THATS GOOD! THAT DESERVES A 10!'";
+        player.needs.money += 10;
+                };
+};
+if(subject.decayV > 30 &&subject.decayV < 50) {
+    generalMSG = "VIKTOR: 'IT DOESN'T LOOK VERY FRESH, BUT IT'LL SURVIVE A DAY BEFORE IT MEETS MY STOMACH!'";
+    player.needs.money += 5;
+};
+if(subject.decayV > 50 && subject.decayV < 90) {
+    if(Math.floor(Math.random() *2) + 1 === 1) {
+generalMSG = "VIKTOR: 'GIVING ME HALF-ROTTEN MEAT NOW-AREN'T WE? ... I GUESS CUPCAKE CAN EAT THAT...'";
+player.needs.money += 2.5;
+    } else {
+        generalMSG = "VIKTOR: 'BRO THAT STUFF GONNA MAKE ME VOMIT. I WOULDNT GIVE IT TO MY DOG! THAT IS A GENEROUS HALF!'";
+        player.needs.money += 0.5;
+    };
+};
+if(subject.decayV > 90) {
+    generalMSG = "VIKTOR: '*GRUNTS* IS THAT ROTTEN DEER OR YOU STOLE A CORPSE THIS TIME?? GET THAT AWAY FROM ME!'";
+};
+          } else {
+            generalMSG = "VIKTOR: 'THAT STUFF IS FULL OF PARASITES BRO! ... IF YOU WANT ME TO TAKE THAT, *YOU* HAVE TO PAY!'";
+          };
+
+
+            delete meats[0];
+        } else {
+            generalMSG = "YOU HAVE NO MEAT TO SELL.";
+        };
+    }
+}
 ];
 let overlays = [
 
@@ -1000,7 +1103,7 @@ for(let i = 0; i < objects.length; i++) {
     if(typeof o.type === "string") {
         if(o.type === "meat") {
             //10000 SECONDS, 16.6 MINUTES
-            o.decayV += 0.0001;
+            o.decayV += 0.0005;
         };
     };
     if(typeof o.moveCondition === "function") {
@@ -1107,7 +1210,6 @@ if(dayTime === "night") {
     };
 };
 vzs ++;
-console.log(vzs);
 if(vzs === 1000) {
     deers ++;
     if(deers < 20) {
@@ -1314,6 +1416,8 @@ player.ff();
 fly();
 ctx.fillStyle = "black";
 ctx.fillRect((canvas.width - 2) / 2, (canvas.height - 2) / 2, 4,4);
+meats = player.inventory.filter(i => typeof i === "object" && i.type === "meat");
+console.log(player.x + " " + player.z);
     requestAnimationFrame(r);
 
 };
