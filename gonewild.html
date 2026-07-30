@@ -122,13 +122,19 @@ function newMeat(x,y,z) {
         clickDown: true,
         type: "meat",
         decayV: 0,
+        used: false,
         mouseOn: false,
         parasite: 1 + Math.floor(Math.random() * 2),
         onMO() {
-            generalMSG = "PICK UP MEAT";
+            if(this.visible === true) {    
+                 generalMSG = "PICK UP MEAT";
+            };
+
         },
         onClick() {
-          player.inventory.push(this);
+            let paras = this.parasite;
+            let decay = this.decayV;
+          player.meat = {decayV: decay, parasite: paras};
             this.visible = false;
         },
         ff() {
@@ -289,7 +295,9 @@ function sticks() {
         c: "brown" , clickDown: true, tallerThanPlayer: false,  mouseOn: false, ncd:0,
         onMO() {
             if(this.d <  clickDistance) {
-            generalMSG = "PICK UP FIREWOOD"; 
+                if(this.visible === true) {
+            generalMSG = "PICK UP FIREWOOD";
+                }; 
             };},
             nonMO() {
                 if(this.d <  clickDistance) {
@@ -607,6 +615,7 @@ this.directionVector[2] = Math.sin(this.ry) * this.speed;
         //1: THE BULLETS IN THE GUN:
         2,
     ], needs: {hunger: 10, fatigue: 10, money: 10}, sleeping: false,
+    meat: 0,
 };
 
 let objects = [
@@ -806,12 +815,20 @@ clickDown: true, onClick() {
     orgsx: 250, orgsy: 400, img: lm("./merchant.png"),
     visible: true, tallerThanPlayer: true, mouseOn: false,
     onMO() {
-        if(meats.length > 0) {
+        if(this.visible === true &&this.d < 300) {
+        if(player.meat !== 0) {
         generalMSG = "SELL MEAT FROM YOUR BACKPACK TO VIKTOR";
         } else {
             generalMSG = "YOU HAVE NO MEAT TO SELL.";
         };
+    };
     }, greetCd: 0, ff() {
+        if(time > 17 || time > 0 && time < 7) {
+            this.visible = false;
+        } else {
+            this.visible = true;
+        };
+        if(this.visible === true) {
         if(this.d < 300) {
             this.greetCd ++;
             if(this.greetCd === 1) {
@@ -830,14 +847,16 @@ clickDown: true, onClick() {
                             generalMSG = "VIKTOR: 'HELLO! WANNA SEE HOW I PROVED THE ILLUMINATI LIVES IN THE SATURN HEXAGON?'";
                             break;
          };
+        };
             };
         } else {
             this.greetCd = 0;
         };
     }, 
     onClick() {
-        if(meats.length > 0) {
-          let subject = meats[0];
+        if(this.visible === true &&this.d < 300) { 
+            if(player.meat !== 0) {
+          let subject = player.meat;
 
           if(subject.parasite === 1) {
             if(subject.decayV < 10) {
@@ -877,13 +896,50 @@ if(subject.decayV > 90) {
           } else {
             generalMSG = "VIKTOR: 'THAT STUFF IS FULL OF PARASITES BRO! ... IF YOU WANT ME TO TAKE THAT, *YOU* HAVE TO PAY!'";
           };
-
-
-            delete meats[0];
-        } else {
-            generalMSG = "YOU HAVE NO MEAT TO SELL.";
+player.meat = 0;
         };
-    }
+    } else {
+        this.clickCount ++;
+        if(this.clickCount > 5) {
+            let seed = 1 + Math.floor(Math.random() * 5);
+            switch(seed) {
+                case 1:
+                    generalMSG = "VIKTOR: 'BRADAR STOP TOUCHING ME!'";
+                    break;
+                    case 2:
+                        generalMSG = "VIKTOR: 'BRROO YOU TOUCHED ME " + this.clickCount + " TIMES IT'S ENOUGH!'";
+                        break;
+                        case 3:
+                            generalMSG = "VIKTOR: 'STOP TOUCHING ME BRADAR!'";
+                            break;
+                            case 4: 
+                            generalMSG = "VIKTOR: 'BRADAR WHY YOU TOUCH ME  BRADAR?";
+                            break;
+                            case 5:
+                                generalMSG = "VIKTOR: 'STOP TOUCHING ME BRADAR'";
+                                break;
+            };
+            setTimeout(function() {
+                this.clickCount = 0;
+            }, 15000);
+        };
+    };
+        }, clickCount: 0,
+},
+//MERCHANT DOG
+{
+    x:0,y:0,z:0,
+    sx:0,sy:0,orgX: canvas.width-35,
+     orgZ: canvas.width - 25, orgsx: 120, orgsy: 250,
+     visible: true, img: lm("./doggooo.jfif"), tallerThanPlayer: false, 
+     clickDown: true, mouseOn: false, onMO() {
+        if(this.d < 300) {
+            generalMSG = "CUPCAKE.";
+        };
+     },onClick() {
+        console.log("WOOF WOOF BIETCH!");
+     }
+
 }
 ];
 let overlays = [
@@ -1217,6 +1273,9 @@ deer(0,0,0,);
     };
     vzs = 0;
 };
+if(player.meat !== 0) {
+    player.meat.decayV += 0.0005;
+};
  }, 1);
 
 //RENDER
@@ -1417,7 +1476,7 @@ fly();
 ctx.fillStyle = "black";
 ctx.fillRect((canvas.width - 2) / 2, (canvas.height - 2) / 2, 4,4);
 meats = player.inventory.filter(i => typeof i === "object" && i.type === "meat");
-console.log(player.x + " " + player.z);
+console.log(player.meat);
     requestAnimationFrame(r);
 
 };
