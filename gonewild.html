@@ -617,6 +617,7 @@ this.directionVector[2] = Math.sin(this.ry) * this.speed;
     ], needs: {hunger: 10, fatigue: 10, money: 10}, sleeping: false,
     meat: 0,
 };
+let tableD = 0;
 
 let objects = [
     //BIKEEEEEEE
@@ -940,7 +941,84 @@ player.meat = 0;
         console.log("WOOF WOOF BIETCH!");
      }
 
-}
+},
+//BULLETS
+{
+    x:0,y:0,z:0,
+    sx:0, sy: 0, orgsx: 65, 
+    orgsy: 65, tallerThanPlayer: false, orgX: canvas.width + 1,
+    orgZ: canvas.width - 70, visible: true, img: lm("./ammo.png"),
+    orgY: 0,
+    clickDown: true, mouseOn: false, onMO() {
+        if(this.d < 200 && this.visible === true) {
+            generalMSG = "BUY AMMO (4 BULLETS FOR 10$)";
+        };
+    },
+    ff() {
+          if(time > 17 || time > 0 && time < 7) {
+            this.visible = false;
+        } else {
+            this.visible = true;
+        };
+    }, onClick() {
+        if(player.needs.money >= 10) {
+            player.needs.money -= 10;
+            player.bullets += 4;
+        };
+    }
+}, //BEERS
+{
+    x:0,y:0,z:0,
+    sx:0, sy: 0, orgsx: 45, 
+    orgsy: 75, tallerThanPlayer: false, orgX: canvas.width + 3,
+    orgZ: canvas.width - 70, visible: true, img: lm("./ber.png"),
+    orgY: 0,
+    clickDown: true, mouseOn: false, onMO() {
+        if(this.d < 200 && this.visible === true) {
+            generalMSG = "BUY BEER FOR 5$";
+        };
+    },
+    ff() {
+   
+        this.orgY = sy1 - this.sy;
+          if(time > 17 || time > 0 && time < 7) {
+            this.visible = false;
+        } else {
+            this.visible = true;
+        };
+    }, onClick() {
+        if(player.needs.money >= 5) {
+            player.needs.money -= 5;
+            player.inventory.push("beer");
+        };
+    }
+},
+//SAUSAGES
+{
+    x:0,y:0,z:0,
+    sx:0, sy: 0, orgsx: 45, 
+    orgsy: 75,tallerThanPlayer: false, orgX: canvas.width + 5,
+    orgZ: canvas.width - 70, visible: true, img: lm("./sausage.png"),
+    orgY: 0,
+    clickDown: true, mouseOn: false, onMO() {
+        if(this.d < 200 && this.visible === true) {
+            generalMSG = "BUY SAUSAGES FOR 7$";
+        };
+    },
+    ff() {
+        this.orgY = sy1 - this.sy;
+          if(time > 17 || time > 0 && time < 7) {
+            this.visible = false;
+        } else {
+            this.visible = true;
+        };
+    }, onClick() {
+        if(player.needs.money >= 7) {
+            player.needs.money -= 7;
+            player.inventory.push("sausage");
+        };
+    }
+},
 ];
 let overlays = [
 
