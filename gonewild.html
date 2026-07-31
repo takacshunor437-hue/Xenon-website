@@ -518,6 +518,9 @@ let b = 0;
 let brightness = 75;
 let generalMSG = "";
 let meats;
+let sausages;
+let beers;
+let wooods;
 let skyColor = "rgba(0,0,255,1)";
 let objects_canRotate = [
     /*
@@ -617,7 +620,7 @@ this.directionVector[2] = Math.sin(this.ry) * this.speed;
     ], needs: {hunger: 10, fatigue: 10, money: 10}, sleeping: false,
     meat: 0,
 };
-let tableD = 0;
+let npcTxt = "";
 
 let objects = [
     //BIKEEEEEEE
@@ -836,16 +839,16 @@ clickDown: true, onClick() {
             let greetSeed = 1 + Math.floor(Math.random() * 4);
          switch(greetSeed) {
             case 1:
-                generalMSG = "VIKTOR: 'WASSUP?'";
+                npcTxt = "VIKTOR: 'WASSUP?'";
                 break;
                 case 2:
-                    generalMSG = "VIKTOR: 'HELLO! WHAT DO YOU NEED?'";
+                    npcTxt = "VIKTOR: 'HELLO! WHAT DO YOU NEED?'";
                     break;
                     case 3:
-                        generalMSG = "VIKTOR: 'HI! WHAT DID YOU BRING ME TODAY?'";
+                        npcTxt = "VIKTOR: 'HI! WHAT DID YOU BRING ME TODAY?'";
                         break;
                         case 4:
-                            generalMSG = "VIKTOR: 'HELLO! WANNA SEE HOW I PROVED THE ILLUMINATI LIVES IN THE SATURN HEXAGON?'";
+                            npcTxt = "VIKTOR: 'HELLO! WANNA SEE HOW I PROVED THE ILLUMINATI LIVES IN THE SATURN HEXAGON?'";
                             break;
          };
         };
@@ -862,68 +865,68 @@ clickDown: true, onClick() {
           if(subject.parasite === 1) {
             if(subject.decayV < 10) {
 if(Math.floor(Math.random() * 2) + 1 === 1) {
-    generalMSG = "VIKTOR: 'WAAA BRO THAT IS SOME GOOD MEAT! JUST LOOKING AT IT MAKES ME HUNGRY! ...OR GREEDY.'";
+    npcTxt = "VIKTOR: 'WAAA BRO THAT IS SOME GOOD MEAT! JUST LOOKING AT IT MAKES ME HUNGRY! ...OR GREEDY.'";
     player.needs.money += 20;
 } else {
-    generalMSG = "VIKTOR: 'WHOA! THAT'S SO FRESH BRO IS THIS THING STILL ALIVE???'";
+    npcTxt = "VIKTOR: 'WHOA! THAT'S SO FRESH BRO IS THIS THING STILL ALIVE???'";
     player.needs.money += 20;
 };
             };
 if(subject.decayV > 10 && subject.decayV < 30) {
     if(Math.floor(Math.random() * 2) +  1 === 1) {
-    generalMSG = "VIKTOR: 'HEEEY THATS PRETTY GOOD! I'M GONNA PAY YOU GOOD FOR THAT!'";
+    npcTxt= "VIKTOR: 'HEEEY THATS PRETTY GOOD! I'M GONNA PAY YOU GOOD FOR THAT!'";
     player.needs.money += 10;
     } else {
-        generalMSG = "VIKTOR: 'THATS GOOD! THAT DESERVES A 10!'";
+       npcTxt = "VIKTOR: 'THATS GOOD! THAT DESERVES A 10!'";
         player.needs.money += 10;
                 };
 };
 if(subject.decayV > 30 &&subject.decayV < 50) {
-    generalMSG = "VIKTOR: 'IT DOESN'T LOOK VERY FRESH, BUT IT'LL SURVIVE A DAY BEFORE IT MEETS MY STOMACH!'";
+   npcTxt= "VIKTOR: 'IT DOESN'T LOOK VERY FRESH, BUT IT'LL SURVIVE A DAY BEFORE IT MEETS MY STOMACH!'";
     player.needs.money += 5;
 };
 if(subject.decayV > 50 && subject.decayV < 90) {
     if(Math.floor(Math.random() *2) + 1 === 1) {
-generalMSG = "VIKTOR: 'GIVING ME HALF-ROTTEN MEAT NOW-AREN'T WE? ... I GUESS CUPCAKE CAN EAT THAT...'";
+npcTxt = "VIKTOR: 'GIVING ME HALF-ROTTEN MEAT NOW-AREN'T WE? ... I GUESS CUPCAKE CAN EAT THAT...'";
 player.needs.money += 2.5;
     } else {
-        generalMSG = "VIKTOR: 'BRO THAT STUFF GONNA MAKE ME VOMIT. I WOULDNT GIVE IT TO MY DOG! THAT IS A GENEROUS HALF!'";
+        npcTxt = "VIKTOR: 'BRO THAT STUFF GONNA MAKE ME VOMIT. I WOULDNT GIVE IT TO MY DOG! THAT IS A GENEROUS HALF!'";
         player.needs.money += 0.5;
     };
 };
 if(subject.decayV > 90) {
-    generalMSG = "VIKTOR: '*GRUNTS* IS THAT ROTTEN DEER OR YOU STOLE A CORPSE THIS TIME?? GET THAT AWAY FROM ME!'";
+    npcTxt = "VIKTOR: '*GRUNTS* IS THAT ROTTEN DEER OR YOU STOLE A CORPSE THIS TIME?? GET THAT AWAY FROM ME!'";
 };
           } else {
-            generalMSG = "VIKTOR: 'THAT STUFF IS FULL OF PARASITES BRO! ... IF YOU WANT ME TO TAKE THAT, *YOU* HAVE TO PAY!'";
+           npcTxt= "VIKTOR: 'THAT STUFF IS FULL OF PARASITES BRO! ... IF YOU WANT ME TO TAKE THAT, *YOU* HAVE TO PAY!'";
           };
 player.meat = 0;
-        };
-    } else {
-        this.clickCount ++;
+        } else {
+            this.clickCount ++;
         if(this.clickCount > 5) {
             let seed = 1 + Math.floor(Math.random() * 5);
             switch(seed) {
                 case 1:
-                    generalMSG = "VIKTOR: 'BRADAR STOP TOUCHING ME!'";
+                   npcTxt = "VIKTOR: 'BRADAR STOP TOUCHING ME!'";
                     break;
                     case 2:
-                        generalMSG = "VIKTOR: 'BRROO YOU TOUCHED ME " + this.clickCount + " TIMES IT'S ENOUGH!'";
+                        npcTxt= "VIKTOR: 'BRROO YOU TOUCHED ME " + this.clickCount + " TIMES IT'S ENOUGH!'";
                         break;
                         case 3:
-                            generalMSG = "VIKTOR: 'STOP TOUCHING ME BRADAR!'";
+                            npcTxt = "VIKTOR: 'STOP TOUCHING ME BRADAR!'";
                             break;
                             case 4: 
-                            generalMSG = "VIKTOR: 'BRADAR WHY YOU TOUCH ME  BRADAR?";
+                           npcTxt = "VIKTOR: 'BRADAR WHY YOU TOUCH ME  BRADAR?";
                             break;
                             case 5:
-                                generalMSG = "VIKTOR: 'STOP TOUCHING ME BRADAR'";
+                                npcTxt = "VIKTOR: 'STOP TOUCHING ME BRADAR'";
                                 break;
             };
             setTimeout(function() {
                 this.clickCount = 0;
             }, 15000);
         };
+    };
     };
         }, clickCount: 0,
 },
@@ -980,7 +983,7 @@ player.meat = 0;
     },
     ff() {
    
-        this.orgY = sy1 - this.sy;
+   
           if(time > 17 || time > 0 && time < 7) {
             this.visible = false;
         } else {
@@ -1006,7 +1009,7 @@ player.meat = 0;
         };
     },
     ff() {
-        this.orgY = sy1 - this.sy;
+       
           if(time > 17 || time > 0 && time < 7) {
             this.visible = false;
         } else {
@@ -1143,7 +1146,10 @@ let text = [
         this.text = generalMSG;
         let thissx= ctx.measureText(this.text).width;
      this.x = (canvas.width - thissx) / 2;
-        },}
+        },},
+        {ty: "cx", x: 0, y: canvas.height - 90, f: "15px Comic Sans MS", visible: true, c: "yellow", text: npcTxt, ff() {
+            this.text = npcTxt;
+        }}
 ];
     let v = 0;
     let i_still_hurt = 0;
@@ -1347,7 +1353,7 @@ vzs ++;
 if(vzs === 1000) {
     deers ++;
     if(deers < 20) {
-deer(0,0,0,);
+deer(Math.random() * (-canvas.width + (canvas.width * 2)), 0, Math.random() * (-canvas.width + (canvas.width * 2)));
     };
     vzs = 0;
 };
@@ -1553,8 +1559,15 @@ player.ff();
 fly();
 ctx.fillStyle = "black";
 ctx.fillRect((canvas.width - 2) / 2, (canvas.height - 2) / 2, 4,4);
-meats = player.inventory.filter(i => typeof i === "object" && i.type === "meat");
-console.log(player.meat);
+if(player.meat !== 0) {
+    meats = 1;
+} else {
+    meats = 0;
+};
+beers = player.inventory.filter(i => i === "beer").length;
+sausages = player.inventory.filter(i => i === "sausage").length;
+wooods = player.inventory.filter(i => typeof i === "object" && i.t === "wood").length;
+console.log(beers + ' ' + wooods + ' ' + sausages);
     requestAnimationFrame(r);
 
 };
