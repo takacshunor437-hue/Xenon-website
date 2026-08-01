@@ -34,7 +34,6 @@ function deer(x,y,z) {
         coll: true, state: "w", tallerThanPlayer: true,
         visible: true, dir: 1, dirC: 0, velocity: 0.04,ff() {
             this.velocity = 0.35;
-            console.log(this);
             if(this.state === "w") {
                 this.img = this.normImg;
 this.dirC ++;
@@ -45,7 +44,6 @@ if(this.dirC > 750) {
 
 switch(this.dir) {
     case 1:
-        console.log("happnes.");
         this.orgX += this.velocity;
         break;
         case 2: 
@@ -465,6 +463,14 @@ function onKeys() {
     if(cpk === "1") {
 player.equipped = "gun";
     };
+    if(cpk === "i" || cpk === "I") {
+        if(player.inventoryOn === false) {
+        document.exitPointerLock();
+        }else{
+           document.body.requestPointerLock();
+        };
+        player.inventoryOn = !player.inventoryOn;
+    };
 };
 
 
@@ -475,7 +481,7 @@ function tentStorage() {
 
 function stars() {
     console.log("happened");
-    for(let i = 0; i< 100;i++){
+    for(let i = 0; i< 250;i++){
         objects.push({
             x:0,y:0,z:0,
             sx:0,sy:0,
@@ -550,6 +556,19 @@ let player = {
     strafeVectorz: 0, canShoot: true, equipped: "gun",
     cds: 0, cds1: 0, makingNoise: false,
     ff() {
+        if(this.drunkCD > 0) {
+            this.drunkCD --;
+this.drunkDirSet ++;
+if(this.drunkDirSet > 75) {
+    this.drunkDirSet = 0;
+    this.drunkDir = !this.drunkDir;
+};
+if(this.drunkDir === true) {
+    this.ry += 0.0014;
+}else{
+    this.ry -= 0.0014;
+};
+        };
         if(this.needs.fatigue > 65) {
             this.cds1 = 0;
             this.cds ++;
@@ -618,7 +637,8 @@ this.directionVector[2] = Math.sin(this.ry) * this.speed;
         //1: THE BULLETS IN THE GUN:
         2,
     ], needs: {hunger: 10, fatigue: 10, money: 10}, sleeping: false,
-    meat: 0,
+    meat: 0, inventoryOn: false, drunkCD: 0,
+    drunkDir: false, drunkDirSet: 0,
 };
 let npcTxt = "";
 
@@ -992,7 +1012,7 @@ player.meat = 0;
     }, onClick() {
         if(player.needs.money >= 5) {
             player.needs.money -= 5;
-            player.inventory.push("beer");
+            player.inventory.push({type: "beer", index: player.inventory.length + 1});
         };
     }
 },
@@ -1018,7 +1038,7 @@ player.meat = 0;
     }, onClick() {
         if(player.needs.money >= 7) {
             player.needs.money -= 7;
-            player.inventory.push("sausage");
+            player.inventory.push({type: "sausages", index: player.inventory.length});
         };
     }
 },
@@ -1122,6 +1142,34 @@ this.dirC = 0;
         this.visible = false;
     };
     this.x = canvas.width - size -this.sx - 30;
+}},
+{x: (canvas.width - 256) /2, y: (canvas.height - 134) /2,sx: 256,sy: 134, visible: false, c: "rgba(0,0,0,0.67)", ff() {
+    if(player.inventoryOn === true) {
+        this.visible = true;
+    }else{
+        this.visible = false;
+    };
+}},
+{x: (canvas.width - 256) /2 + 20, y: (canvas.height - 134) / 2 + 20, sx: 40,sy:67, img: lm("./ber.png"), visible: false, ff() {
+     if(player.inventoryOn === true) {
+        this.visible = true;
+    }else{
+        this.visible = false;
+    };
+}, onClick() {
+        let b = player.inventory.filter(b => typeof b === "object" && b.type === "beer");
+       let object = b[0].index - 1;
+       //BRO DONT TOUCH IT, IDK HOW IT WORKS...
+       if(object > -1) {
+        player.inventory[object] = undefined;
+       };
+        player.drunkCD += 600;
+        if(player.needs.fatigue < 95) {
+        player.needs.fatigue += 5;
+        } else {
+            player.needs.fatigue = 100;
+        };
+    
 }}
 ];
 let text = [
@@ -1177,7 +1225,7 @@ my = (canvas.height - 2) / 2
 
 window.addEventListener("mousedown", e => {
     cmbd = e.button;
-    if(!document.pointerLockElement) {
+    if(!document.pointerLockElement && player.inventoryOn === false) {
         document.body.requestPointerLock();
     };
     for(let i = 0; i < overlays.length; i++) {
@@ -1567,7 +1615,6 @@ if(player.meat !== 0) {
 beers = player.inventory.filter(i => i === "beer").length;
 sausages = player.inventory.filter(i => i === "sausage").length;
 wooods = player.inventory.filter(i => typeof i === "object" && i.t === "wood").length;
-console.log(beers + ' ' + wooods + ' ' + sausages);
     requestAnimationFrame(r);
 
 };
