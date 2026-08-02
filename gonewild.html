@@ -553,7 +553,7 @@ let player = {
     dirVRay: [0,0,0], sens: 1,speed: 0.05,
     a: 0.02,
     bike: false, mass: 77.5, strafeVectorx: 0, 
-    strafeVectorz: 0, canShoot: true, equipped: "gun",
+    strafeVectorz: 0, canShoot: true, equipped: "none",
     cds: 0, cds1: 0, makingNoise: false,
     ff() {
         if(this.drunkCD > 0) {
@@ -646,7 +646,7 @@ let objects = [
     //BIKEEEEEEE
 {x: 0, y: 0, z: 0, orgX: 0, orgY: 0, orgZ: 30, sx: 0, sy: 0, tallerThanPlayer: false,orgsx: 310, orgsy: 175, visible: true, img: lm("./bike_off.png"),
 friction_coefficient: 0.025,
-    a: 0.005, clickDown: true, ry: 0, velocity: 0, velocityLimit: 1.14, moveCondition() {return keys["W"] || keys["w"] && player.bike === true},
+    a: 0.01, clickDown: true, ry: 0, velocity: 0, velocityLimit: 1.14, moveCondition() {return keys["W"] || keys["w"] && player.bike === true},
     immStop: false, mass: 20, physics: true, mouseOn: false, onMO() {
         if(this.d <  clickDistance) {
             generalMSG = "RIDE BIKE";
@@ -658,7 +658,7 @@ if(this.d <  clickDistance) {
 };
     },
     onClick() {
-        if(typeof this.d === "number" && this.d < 20) {
+        if(typeof this.d === "number" && this.d < clickDistance) {
         player.bike = true;
         this.visible = false;
         };
@@ -705,7 +705,7 @@ this.velocity = 0;
    nonGrav: true, coll: true, mouseOn: false,
    onMO() {
     if(this.d < clickDistance) {
-    generalMSG = "SLEEP? (RIGHT CLICK) - OR CHECK TENT STORAGE (LEFT CLICK)";
+    generalMSG = "SLEEP? (RIGHT CLICK)";
     };
 },
    nonMO() {
@@ -839,7 +839,7 @@ clickDown: true, onClick() {
     orgsx: 250, orgsy: 400, img: lm("./merchant.png"),
     visible: true, tallerThanPlayer: true, mouseOn: false,
     onMO() {
-        if(this.visible === true &&this.d < 300) {
+        if(this.visible === true &&this.d < clickDistance) {
         if(player.meat !== 0) {
         generalMSG = "SELL MEAT FROM YOUR BACKPACK TO VIKTOR";
         } else {
@@ -878,7 +878,7 @@ clickDown: true, onClick() {
         };
     }, 
     onClick() {
-        if(this.visible === true &&this.d < 300) { 
+        if(this.visible === true &&this.d < clickDistance) { 
             if(player.meat !== 0) {
           let subject = player.meat;
 
@@ -957,7 +957,7 @@ player.meat = 0;
      orgZ: canvas.width - 25, orgsx: 120, orgsy: 250,
      visible: true, img: lm("./doggooo.jfif"), tallerThanPlayer: false, 
      clickDown: true, mouseOn: false, onMO() {
-        if(this.d < 300) {
+        if(this.d < clickDistance) {
             generalMSG = "CUPCAKE.";
         };
      },onClick() {
@@ -973,7 +973,7 @@ player.meat = 0;
     orgZ: canvas.width - 70, visible: true, img: lm("./ammo.png"),
     orgY: 0,
     clickDown: true, mouseOn: false, onMO() {
-        if(this.d < 200 && this.visible === true) {
+        if(this.d < clickDistance && this.visible === true) {
             generalMSG = "BUY AMMO (4 BULLETS FOR 10$)";
         };
     },
@@ -984,20 +984,22 @@ player.meat = 0;
             this.visible = true;
         };
     }, onClick() {
+        if(this.d < clickDistance) {
         if(player.needs.money >= 10) {
             player.needs.money -= 10;
             player.bullets += 4;
         };
+    };
     }
 }, //BEERS
 {
     x:0,y:0,z:0,
     sx:0, sy: 0, orgsx: 45, 
-    orgsy: 75, tallerThanPlayer: false, orgX: canvas.width + 3,
+    orgsy: 75, tallerThanPlayer: false, orgX: canvas.width + 6,
     orgZ: canvas.width - 70, visible: true, img: lm("./ber.png"),
     orgY: 0,
     clickDown: true, mouseOn: false, onMO() {
-        if(this.d < 200 && this.visible === true) {
+        if(this.d < clickDistance && this.visible === true) {
             generalMSG = "BUY BEER FOR 5$";
         };
     },
@@ -1010,21 +1012,23 @@ player.meat = 0;
             this.visible = true;
         };
     }, onClick() {
+        if(this.d < clickDistance) {
         if(player.needs.money >= 5) {
             player.needs.money -= 5;
             player.inventory.push({type: "beer", index: player.inventory.length + 1});
         };
+    };
     }
 },
 //SAUSAGES
 {
     x:0,y:0,z:0,
     sx:0, sy: 0, orgsx: 45, 
-    orgsy: 75,tallerThanPlayer: false, orgX: canvas.width + 5,
+    orgsy: 75,tallerThanPlayer: false, orgX: canvas.width + 9,
     orgZ: canvas.width - 70, visible: true, img: lm("./sausage.png"),
     orgY: 0,
     clickDown: true, mouseOn: false, onMO() {
-        if(this.d < 200 && this.visible === true) {
+        if(this.d < clickDistance && this.visible === true) {
             generalMSG = "BUY SAUSAGES FOR 7$";
         };
     },
@@ -1036,10 +1040,12 @@ player.meat = 0;
             this.visible = true;
         };
     }, onClick() {
+        if(thi.d < clickDistance) {
         if(player.needs.money >= 7) {
             player.needs.money -= 7;
             player.inventory.push({type: "sausages", index: player.inventory.length});
         };
+    };
     }
 },
 ];
@@ -1170,6 +1176,40 @@ this.dirC = 0;
             player.needs.fatigue = 100;
         };
     
+}},
+{x: (canvas.width - 256) /2 + 80, y: (canvas.height - 134) / 2 + 20, sx: 40,sy:67, img: lm("./sausage.png"), visible: false, ff() {
+     if(player.inventoryOn === true) {
+        this.visible = true;
+    }else{
+        this.visible = false;
+    };
+}, onClick() {
+        let b = player.inventory.filter(b => typeof b === "object" && b.type === "sausages");
+       let object = b[0].index - 1;
+       //BRO DONT TOUCH IT, IDK HOW IT WORKS...
+       if(object > -1) {
+        player.inventory[object] = undefined;
+       };
+   if(player.needs.hunger > 15) {
+    player.needs.hunger -= 15;
+   }else{
+    player.needs.hunger = 0;
+   };
+    
+}},
+{x: (canvas.width - 256) /2 + 140, y: (canvas.height - 134) / 2 + 20, sx: 67,sy:40, c:"brown", visible: false, ff() {
+     if(player.inventoryOn === true) {
+        this.visible = true;
+    }else{
+        this.visible = false;
+    };
+},},
+{x: 50,y: canvas.height - 150, sx: 125,sy:100,visible: true, c: "red", ff() {
+    if(player.meat === 0) {
+        this.visible = false;
+    } else{
+        this.visible = true;
+    };
 }}
 ];
 let text = [
@@ -1190,14 +1230,38 @@ let text = [
             this.x = canvas.width - ctx.measureText(this.text).width - 30;
             size = ctx.measureText(this.text).width;
         }},
-        {ty: "NONE BRUV", x:0,y:canvas.height - 45,f: "20px Comic Sans MS", visible: true, c: "black", text: generalMSG, ff() {
+        {ty: "NONE BRUV", x:0,y:canvas.height - 45,f: "20px Comic Sans MS", visible: true, c: "white", text: generalMSG, ff() {
         this.text = generalMSG;
         let thissx= ctx.measureText(this.text).width;
      this.x = (canvas.width - thissx) / 2;
         },},
         {ty: "cx", x: 0, y: canvas.height - 90, f: "15px Comic Sans MS", visible: true, c: "yellow", text: npcTxt, ff() {
             this.text = npcTxt;
-        }}
+        }},
+        {ty: "none bro", x: (canvas.width - 256) /2 + 173.5, y:  (canvas.height - 134) / 2 + 110, c: "white", text: wooods, visible: false, ff() {
+            if(player.inventoryOn === true) {
+                this.visible = true;
+            }else{
+                this.visible = false;
+            };
+            this.text = wooods;
+        }},
+           {ty: "none bro", x: (canvas.width - 256) /2 + 173.5 - 80, y:  (canvas.height - 134) / 2 + 110, c: "white", text: wooods, visible: false, ff() {
+            if(player.inventoryOn === true) {
+                this.visible = true;
+            }else{
+                this.visible = false;
+            };
+            this.text = sausages;
+        }},
+        {ty: "none bro", x: (canvas.width - 256) /2 + 40, y:  (canvas.height - 134) / 2 + 110, c: "white", text: wooods, visible: false, ff() {
+            if(player.inventoryOn === true) {
+                this.visible = true;
+            }else{
+                this.visible = false;
+            };
+            this.text = beers;
+        }},
 ];
     let v = 0;
     let i_still_hurt = 0;
