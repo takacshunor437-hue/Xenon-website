@@ -72,7 +72,7 @@ switch(this.dir) {
                                 this.orgZ -= this.velocity;
                                 break;
                                 if(typeof this.d === "number") {
-                                    if(this.d < 100) {
+                                    if(this.d < 600) {
                                         if(cmbd === 0 && player.equipped === "gun" && player.inventory[1] > 0) {
                                             this.state = "s";
                                         };
@@ -86,10 +86,10 @@ this.state = "s";
             if(this.state === "s") {
                 this.img = this.sImg;
                 if(this.d < 550) {
-                if(this.orgX > player.x) this.orgX += this.velocity;
-                if(this.orgX < player.x) this.orgX -= this.velocity;
-                if(this.orgZ > player.z) this.orgZ += this.velocity;
-                if(this.orgZ < player.z) this.orgZ -= this.velocity;
+                if(this.orgX > player.x) this.orgX += this.velocity *2;
+                if(this.orgX < player.x) this.orgX -= this.velocity * 2;
+                if(this.orgZ > player.z) this.orgZ += this.velocity *2;
+                if(this.orgZ < player.z) this.orgZ -= this.velocity *2;
                 } else {
                     this.state = "w";
                 };
@@ -141,6 +141,21 @@ function newMeat(x,y,z) {
             };
         }
     });
+};
+function dieScreen() {
+    dead = true;
+    setTimeout(function() {
+        dead = false;
+    }, 5000);
+};
+
+function die() {
+if(player.health <= 0) {
+   dieScreen();
+   player.inventory = [4,2];
+       player.health = 100;
+
+};
 };
 
 function cd(x,y) {
@@ -268,13 +283,20 @@ if(i === 0) {
 
 function playSound(path) {
     const sound = new Audio();
-    sound.src = path;
+    sound.src = "./assets/" + path;
+    sound.play();
+};
+
+function playSound_looped(path) {
+        const sound = new Audio();
+    sound.src = "./assets/" + path;
+    sound.loop = true;
     sound.play();
 };
 
 function lm(p) {
     const img = new Image();
-    img.src = p;
+    img.src = "./assets/"+p;
     return img;
 };
 
@@ -315,6 +337,7 @@ function sticks() {
       if(this.d < 15) {
         player.makingNoise  = true;
         this.visible = false;
+        playSound("./woodCrack.wav");
         this.tallerThanPlayer = "NOTABOOLEANLOL";
         this.hasOwnY = true;
         this.orgY = -100000000000000000;
@@ -447,6 +470,7 @@ if(x === 1) {
 function reload() {
     player.canShoot = false;
     if(player.inventory[0] > 0 && player.inventory[1] < 2) {
+        playSound("./reload.wav");
     player.inventory[0] -= (2 - player.inventory[1]);
     player.inventory[1] += (2 - player.inventory[1]);
     setTimeout(function() {player.canShoot = true}, 2500);
@@ -528,6 +552,7 @@ let sausages;
 let beers;
 let wooods;
 let skyColor = "rgba(0,0,255,1)";
+let dead = false;
 let objects_canRotate = [
     /*
     {orgX: 45, orgZ: 1, orgY: 1,c: "red", x:0,y:0,z:0, orgsx: 25,orgsy: 25, sx: 0,sy: 0,p: [
@@ -628,12 +653,11 @@ this.directionVector[2] = Math.sin(this.ry) * this.speed;
             this.z -= strafeVectorz;
         };
     };
-    }, renderDistance: 1500, 
-    bullets: 25, hp: 100, rx: 0,
+    }, renderDistance: 1500, hp: 100, rx: 0,
     health: 100, ROOKIE_OFFBIKE: false, 
     inventory: [
         //0: THE STORED BULLETS
-        10,
+        4,
         //1: THE BULLETS IN THE GUN:
         2,
     ], needs: {hunger: 10, fatigue: 10, money: 10}, sleeping: false,
@@ -776,7 +800,7 @@ clickDown: true, onClick() {
 //CAMPFIRE
 {x: 0, y: 0, z: 0, sx: 0, sy: 0, sz: 0, orgX: 15, orgY: 0, orgZ:-20, orgsx: 90, orgsy: 90, visible: true, onImg: lm("./firePlace_burn.png"), nonImg: lm("./firePlace_noBurn.png"),
     img: lm("./firePlace_noBurn.png"),  tallerThanPlayer: false, sticks: 0, mouseOn: false, clickDown: true, burnTime:0, ci: 0, lastBrightness: brightness, brightness_value: 15,
-    type: "fireplace",  bcd: 0, added: false, subtracted: false, burning: false, cdf: 0,onMO() {
+    type: "fireplace",  bcd: 0, added: false, subtracted: false, burning: false, cdf: 0, soundCd: 0,onMO() {
     if(this.sticks > 0) {
         if(this.d <  clickDistance) {
         generalMSG = "START FIRE (CLICK!) - AMOUNT OF WOOD: " + this.sticks;
@@ -801,11 +825,16 @@ clickDown: true, onClick() {
        if(this.burnTime > 0) {
         this.cdf = 0;
         this.img = this.onImg;
+        this.soundCd ++;
+        if(this.soundCd === 1) {
+        playSound("./fire.wav");
+        };
         this.burnTime --;
   this.burning = true;
        } else {
         this.bcd = 0;
         this.img = this.nonImg;
+        this.soundCd = 0;
         this.cdf ++;
         if(this.cdf === 1) {
         brightness = this.lastBrightness;
@@ -818,6 +847,7 @@ clickDown: true, onClick() {
         if(this.sticks > 0 && this.d <  clickDistance) {
             delete player.inventory[this.ci];
             this.sticks --;
+            playSound("./lighter.wav");
             this.burnTime += 1000;
             brightness += this.brightness_value;
         };
@@ -826,16 +856,16 @@ clickDown: true, onClick() {
 //MERCHANT TENT
 {
     x: 0, y: 0, z: 0,
-    sx: 0, sy: 0, orgX: canvas.width,
-    orgZ: canvas.width, orgY: 0, orgsx: 500,
+    sx: 0, sy: 0, orgX: canvas.width *1.5,
+    orgZ: canvas.width *1.5, orgY: 0, orgsx: 500,
     orgsy: 400, tallerThanPlayer: true, img: lm("./Mtent.png"),
     coll: true, visible: true
 },
 //MERCHANT
 {
     x:0,y:0,z:0,
-    sx:0,sy:0,orgX: canvas.width,
-    orgZ: canvas.width - 25,orgY: 0,
+    sx:0,sy:0,orgX: canvas.width *1.5,
+    orgZ: canvas.width*1.5 - 25,orgY: 0,
     orgsx: 250, orgsy: 400, img: lm("./merchant.png"),
     visible: true, tallerThanPlayer: true, mouseOn: false,
     onMO() {
@@ -953,8 +983,8 @@ player.meat = 0;
 //MERCHANT DOG
 {
     x:0,y:0,z:0,
-    sx:0,sy:0,orgX: canvas.width-35,
-     orgZ: canvas.width - 25, orgsx: 120, orgsy: 250,
+    sx:0,sy:0,orgX: canvas.width*1.5-35,
+     orgZ: canvas.width*1.5 - 25, orgsx: 120, orgsy: 250,
      visible: true, img: lm("./doggooo.jfif"), tallerThanPlayer: false, 
      clickDown: true, mouseOn: false, onMO() {
         if(this.d < clickDistance) {
@@ -962,6 +992,12 @@ player.meat = 0;
         };
      },onClick() {
         console.log("WOOF WOOF BIETCH!");
+        if(Math.floor(Math.random() * 2) + 1 === 1) {
+        playSound("./cupcake_barks.ogg");
+        npcTxt = "VIKTOR: '...MY DOG IS NOT DOGGING'";
+        } else{
+              playSound("./cupcake_barks.ogg");
+        };
      }
 
 },
@@ -969,8 +1005,8 @@ player.meat = 0;
 {
     x:0,y:0,z:0,
     sx:0, sy: 0, orgsx: 65, 
-    orgsy: 65, tallerThanPlayer: false, orgX: canvas.width + 1,
-    orgZ: canvas.width - 70, visible: true, img: lm("./ammo.png"),
+    orgsy: 65, tallerThanPlayer: false, orgX: canvas.width *1.5+ 1,
+    orgZ: canvas.width *1.5- 70, visible: true, img: lm("./ammo.png"),
     orgY: 0,
     clickDown: true, mouseOn: false, onMO() {
         if(this.d < clickDistance && this.visible === true) {
@@ -987,7 +1023,8 @@ player.meat = 0;
         if(this.d < clickDistance) {
         if(player.needs.money >= 10) {
             player.needs.money -= 10;
-            player.bullets += 4;
+            playSound("./purchase.wav");
+            player.inventory[0] += 4;
         };
     };
     }
@@ -995,8 +1032,8 @@ player.meat = 0;
 {
     x:0,y:0,z:0,
     sx:0, sy: 0, orgsx: 45, 
-    orgsy: 75, tallerThanPlayer: false, orgX: canvas.width + 6,
-    orgZ: canvas.width - 70, visible: true, img: lm("./ber.png"),
+    orgsy: 75, tallerThanPlayer: false, orgX: canvas.width * 1.5 + 6,
+    orgZ: canvas.width *1.5 - 70, visible: true, img: lm("./ber.png"),
     orgY: 0,
     clickDown: true, mouseOn: false, onMO() {
         if(this.d < clickDistance && this.visible === true) {
@@ -1015,6 +1052,7 @@ player.meat = 0;
         if(this.d < clickDistance) {
         if(player.needs.money >= 5) {
             player.needs.money -= 5;
+                  playSound("./purchase.wav");
             player.inventory.push({type: "beer", index: player.inventory.length + 1});
         };
     };
@@ -1024,8 +1062,8 @@ player.meat = 0;
 {
     x:0,y:0,z:0,
     sx:0, sy: 0, orgsx: 45, 
-    orgsy: 75,tallerThanPlayer: false, orgX: canvas.width + 9,
-    orgZ: canvas.width - 70, visible: true, img: lm("./sausage.png"),
+    orgsy: 75,tallerThanPlayer: false, orgX: canvas.width * 1.5 + 9,
+    orgZ: canvas.width *1.5- 70, visible: true, img: lm("./sausage.png"),
     orgY: 0,
     clickDown: true, mouseOn: false, onMO() {
         if(this.d < clickDistance && this.visible === true) {
@@ -1040,10 +1078,11 @@ player.meat = 0;
             this.visible = true;
         };
     }, onClick() {
-        if(thi.d < clickDistance) {
+        if(this.d < clickDistance) {
         if(player.needs.money >= 7) {
+                  playSound("./purchase.wav");
             player.needs.money -= 7;
-            player.inventory.push({type: "sausages", index: player.inventory.length});
+            player.inventory.push({type: "sausages", index: player.inventory.length +1});
         };
     };
     }
@@ -1070,6 +1109,7 @@ let overlays = [
                           
                     this.y = canvas.height - canvas.height / 7;
                      player.inventory[1] --;
+                     playSound("./shot.wav");
                     if(Math.floor(Math.random() * 2) + 1===1) {
                         if(player.needs.fatigue < 65) {
                     player.ry +=  Math.random() / 5;
@@ -1168,13 +1208,15 @@ this.dirC = 0;
        //BRO DONT TOUCH IT, IDK HOW IT WORKS...
        if(object > -1) {
         player.inventory[object] = undefined;
-       };
-        player.drunkCD += 600;
+                player.drunkCD += 600;
+        playSound("./glubglubglub.wav");
         if(player.needs.fatigue < 95) {
         player.needs.fatigue += 5;
         } else {
             player.needs.fatigue = 100;
         };
+       };
+
     
 }},
 {x: (canvas.width - 256) /2 + 80, y: (canvas.height - 134) / 2 + 20, sx: 40,sy:67, img: lm("./sausage.png"), visible: false, ff() {
@@ -1189,6 +1231,7 @@ this.dirC = 0;
        //BRO DONT TOUCH IT, IDK HOW IT WORKS...
        if(object > -1) {
         player.inventory[object] = undefined;
+        playSound("./yummy.wav");
        };
    if(player.needs.hunger > 15) {
     player.needs.hunger -= 15;
@@ -1210,58 +1253,115 @@ this.dirC = 0;
     } else{
         this.visible = true;
     };
+}},
+{x: 0,y:0,sx:canvas.width,sy:canvas.height, c:"black", visible: false, ff() {
+    if(dead === true) {
+        this.visible = true;
+    }else{
+        this.visible = false;
+    };
 }}
 ];
+let clicks = 0;
 let text = [
-    {x: 30 +  canvas.width * 0.11, visible: true,y: 10 + canvas.height *0.05 - (canvas.height * 0.05 / 4), ty: "none", c: "red",f: canvas.height *0.05 + "px Comic Sans MS", text: "HEALTH"},
+    {x: 30 +  canvas.width * 0.11, visible: true,y: 10 + canvas.height *0.05 - (canvas.height * 0.05 / 4), ty: "none", c: "red",f: canvas.height *0.05 + "px Comic Sans MS", text: "HEALTH", ff() {
+        if(dead) {
+            this.visible = false;
+        } else{
+            this.visible = true;
+        };
+    }},
     {x: 0, y: 10 + canvas.height *0.05 - (canvas.height * 0.05 / 4), ty: "none", c: "green",f: canvas.height *0.05 + "px Comic Sans MS", text: "HEALTH", ff() {
         this.text = "CASH: " + player.needs.money;
         this.x = canvas.width - ctx.measureText(this.text).width - 30;
+            if(dead) {
+            this.visible = false;
+        } else{
+            this.visible = true;
+        };
     }, visible: true},
-    {x: 30 +  canvas.width * 0.11,visible: true, y: 10 + canvas.height *0.05 - (canvas.height * 0.05 / 4) + (canvas.height * 0.05) * 2, ty: "none", c: "green",f: canvas.height *0.05 + "px Comic Sans MS", text: "HUNGER"},
-        {x: 30 +  canvas.width * 0.11, visible: true,y: 10 + canvas.height *0.05 - (canvas.height * 0.05 / 4) + (canvas.height * 0.05) * 4, ty: "none", c: "white",f: canvas.height *0.05 + "px Comic Sans MS", text: "FATIGUE"},
+    {x: 30 +  canvas.width * 0.11,visible: true, y: 10 + canvas.height *0.05 - (canvas.height * 0.05 / 4) + (canvas.height * 0.05) * 2, ty: "none", c: "green",f: canvas.height *0.05 + "px Comic Sans MS", text: "HUNGER", ff() {
+            if(dead) {
+            this.visible = false;
+        } else{
+            this.visible = true;
+        };
+    }},
+        {x: 30 +  canvas.width * 0.11, visible: true,y: 10 + canvas.height *0.05 - (canvas.height * 0.05 / 4) + (canvas.height * 0.05) * 4, ty: "none", c: "white",f: canvas.height *0.05 + "px Comic Sans MS", text: "FATIGUE", ff() {
+                if(dead) {
+            this.visible = false;
+        } else{
+            this.visible = true;
+        };
+        }},
         {x: 0, y: canvas.height - canvas.height * 0.05, text: player.inventory[1], c: "black", visible: true, f: canvas.height * 0.05 + "px Comic Sans MS", ty: "none", ff() {
             if(player.equipped === "gun") {
                 this.visible = true;
             } else {
                 this.visible = false;
             };
+
             this.text = player.inventory[1] + "/2";
             this.x = canvas.width - ctx.measureText(this.text).width - 30;
             size = ctx.measureText(this.text).width;
         }},
-        {ty: "NONE BRUV", x:0,y:canvas.height - 45,f: "20px Comic Sans MS", visible: true, c: "white", text: generalMSG, ff() {
+        {ty: "cx", x:0,y:canvas.height - 45,f: "20px Comic Sans MS", visible: true, c: "white", text: generalMSG, ff() {
+                if(dead) {
+            this.visible = false;
+        } else{
+            this.visible = true;
+        };
         this.text = generalMSG;
-        let thissx= ctx.measureText(this.text).width;
-     this.x = (canvas.width - thissx) / 2;
         },},
         {ty: "cx", x: 0, y: canvas.height - 90, f: "15px Comic Sans MS", visible: true, c: "yellow", text: npcTxt, ff() {
             this.text = npcTxt;
+                if(dead) {
+            this.visible = false;
+        } else{
+            this.visible = true;
+        };
         }},
         {ty: "none bro", x: (canvas.width - 256) /2 + 173.5, y:  (canvas.height - 134) / 2 + 110, c: "white", text: wooods, visible: false, ff() {
             if(player.inventoryOn === true) {
                 this.visible = true;
-            }else{
+                  this.text = wooods;
+            } else {
                 this.visible = false;
             };
-            this.text = wooods;
+
+          
         }},
-           {ty: "none bro", x: (canvas.width - 256) /2 + 173.5 - 80, y:  (canvas.height - 134) / 2 + 110, c: "white", text: wooods, visible: false, ff() {
+           {ty: "none bro", x: (canvas.width - 256) /2 + 173.5 - 80, y:  (canvas.height - 134) / 2 + 110, c: "white", text: sausages, visible: false, ff() {
             if(player.inventoryOn === true) {
                 this.visible = true;
-            }else{
+                 this.text = sausages;
+            } else {
                 this.visible = false;
             };
-            this.text = sausages;
+           
         }},
-        {ty: "none bro", x: (canvas.width - 256) /2 + 40, y:  (canvas.height - 134) / 2 + 110, c: "white", text: wooods, visible: false, ff() {
+        {ty: "none bro", x: (canvas.width - 256) /2 + 40, y:  (canvas.height - 134) / 2 + 110, c: "white", text: beers, visible: false, ff() {
             if(player.inventoryOn === true) {
                 this.visible = true;
-            }else{
+                 this.text = beers;
+            } else {
                 this.visible = false;
             };
-            this.text = beers;
+           
         }},
+        {ty: "ca", x: 0, y: 0, f: "40px Comic Sans MS", visible: false, text: "YOU DIED", cd: 0,c: "white", ff() {
+            if(dead === true) {
+                this.visible = true;
+                this.cd ++;
+                if(this.cd === 150) {
+                    this.text = "NOOB.";
+                };
+                        }else{
+                this.visible = false;
+                this.cd = 0;
+                this.text = "YOU DIED";
+            };
+        }}
 ];
     let v = 0;
     let i_still_hurt = 0;
@@ -1278,7 +1378,7 @@ window.addEventListener("keyup", e => {
 });
 window.addEventListener("mousemove", e => {
     //CONVERT DEGREES TO RADIANS
-    if(player.bike === false) {
+    if(player.bike === false && player.inventoryOn  === false) {
     let rotation = (Math.PI / 360 * player.sens) / 10;
    player.ry -= e.movementX * rotation;
    player.rx -= e.movementY * rotation;
@@ -1291,6 +1391,10 @@ window.addEventListener("mousedown", e => {
     cmbd = e.button;
     if(!document.pointerLockElement && player.inventoryOn === false) {
         document.body.requestPointerLock();
+    };
+    clicks ++;
+    if(clicks === 1) {
+        playSound_looped("./bgNoise.mp3");
     };
     for(let i = 0; i < overlays.length; i++) {
         let o = overlays[i];
@@ -1400,7 +1504,7 @@ if(keys["w"] || keys["W"] || keys["s"] || keys["S"] || keys["a"] || keys["A"] ||
     player.speed += (player.a / 10);
     };
     if(player.needs.hunger < 100) {
-player.needs.hunger += 0.0001;
+player.needs.hunger += 0.001;
 } else {
     if(player.health > 0) {
         player.health -= 0.01;
@@ -1412,7 +1516,7 @@ player.needs.hunger += 0.0001;
 };
 
 if(player.needs.hunger < 100) {
-player.needs.hunger += 0.001;
+player.needs.hunger += 0.0075;
 } else {
     if(player.health > 0) {
         player.health -= 0.01;
@@ -1470,7 +1574,8 @@ deer(Math.random() * (-canvas.width + (canvas.width * 2)), 0, Math.random() * (-
     vzs = 0;
 };
 if(player.meat !== 0) {
-    player.meat.decayV += 0.0005;
+    player.meat.decayV += 0.001;
+   
 };
  }, 1);
 
@@ -1647,19 +1752,20 @@ if(typeof t.ff === "function") {
 };
 switch(ty) {
     case "cx":
-        x = centeredx;
+        t.x = centeredx;
         break;
         case "cy":
-            y = centeredy;
+            t.y = centeredy;
             break;
             case "ca":
-                x = centeredx;
-                y = centeredy;
+                t.x = centeredx;
+                t.y = centeredy;
 };
     ctx.font = f;
     ctx.fillStyle = c;
     if(t.visible === true) {
-    ctx.fillText(t.text, x,y);
+        
+    ctx.fillText(t.text, t.x,t.y);
     };
 };
 
@@ -1676,14 +1782,26 @@ if(player.meat !== 0) {
 } else {
     meats = 0;
 };
-beers = player.inventory.filter(i => i === "beer").length;
-sausages = player.inventory.filter(i => i === "sausage").length;
+beers = player.inventory.filter(i => typeof i === "object" && i.type === "beer").length;
+sausages = player.inventory.filter(i => typeof i === "object" && i.type === "sausages").length;
 wooods = player.inventory.filter(i => typeof i === "object" && i.t === "wood").length;
+die();
+
+if(keys["ArrowDown"]) {
+    if(player.sens >0) {
+    player.sens -= 0.1;
+    };
+};
+if(keys["ArrowUp"]) {
+    player.sens += 0.1;
+};
     requestAnimationFrame(r);
 
 };
 
 r();
+
+
 
     </script>
 </html>
