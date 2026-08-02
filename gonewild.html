@@ -300,6 +300,35 @@ function lm(p) {
     return img;
 };
 
+function save() {
+    const savedData = {
+        hp: player.health,
+        money: player.needs.money,
+        fatigue: player.needs.fatigue,
+        hunger: player.needs.hunger,
+        inventory: player.inventory,
+        x: player.x,
+        z: player.z,
+
+    };
+console.log(JSON.parse(localStorage.getItem("data")));
+   localStorage.setItem("data", JSON.stringify(savedData));
+};
+
+function load() {
+    let normalData = JSON.parse(localStorage.getItem("data"));
+
+    console.log(normalData);
+    player.health = normalData.hp;
+    player.inventory = normalData.inventory;
+    player.needs.money = normalData.money;
+    player.needs.hunger = normalData.hunger;
+    player.needs.fatigue = normalData.fatigue;
+    player.x = normalData.x;
+    player.z = normalData.z;
+
+};
+
 function sticks() {
 
     let trees = objects.filter(o => o.type === "tree");
@@ -478,7 +507,10 @@ function reload() {
 };
 
 function onKeys() {
-    if(cpk === "r" || cpk === "R") {
+    if(cpk ==="t" || cpk === "T") {
+        save();
+    };
+        if(cpk === "r" || cpk === "R") {
         reload();
     };
     if(cpk === "0") {
@@ -665,7 +697,7 @@ this.directionVector[2] = Math.sin(this.ry) * this.speed;
     drunkDir: false, drunkDirSet: 0,
 };
 let npcTxt = "";
-
+let universalDistance = 0;
 let objects = [
     //BIKEEEEEEE
 {x: 0, y: 0, z: 0, orgX: 0, orgY: 0, orgZ: 30, sx: 0, sy: 0, tallerThanPlayer: false,orgsx: 310, orgsy: 175, visible: true, img: lm("./bike_off.png"),
@@ -1087,6 +1119,22 @@ player.meat = 0;
     };
     }
 },
+{
+    x: 0, y: 0, z: 0,
+    sx: 0, sy: 0, orgX: -100,
+    orgZ: 100, visible: true,
+    orgsx: 360, orgsy: 360, tallerThanPlayer: true,
+    img: lm("./GIRAFFEDOGGOOOO.png"), ff() {
+        universalDistance = this.d;
+        if(this.orgX < canvas.width && this.orgZ < canvas.width) {
+        this.orgX += 0.05;
+        this.orgZ += 0.05;
+        } else {
+            this.orgX = 100;
+            this.orgZ = 100;
+        };
+    }
+}
 ];
 let overlays = [
 
@@ -1260,7 +1308,7 @@ this.dirC = 0;
     }else{
         this.visible = false;
     };
-}}
+}},
 ];
 let clicks = 0;
 let text = [
@@ -1351,9 +1399,10 @@ let text = [
         }},
         {ty: "ca", x: 0, y: 0, f: "40px Comic Sans MS", visible: false, text: "YOU DIED", cd: 0,c: "white", ff() {
             if(dead === true) {
+                console.log(this)
                 this.visible = true;
                 this.cd ++;
-                if(this.cd === 150) {
+                if(this.cd >150) {
                     this.text = "NOOB.";
                 };
                         }else{
@@ -1366,6 +1415,8 @@ let text = [
     let v = 0;
     let i_still_hurt = 0;
         let vzs = 0;
+        let abc = 0;
+        let saveCd = 0;
 //EVENT LISTENERS
 window.addEventListener("keydown", e => {
     keys[e.key] = true;
@@ -1577,6 +1628,13 @@ if(player.meat !== 0) {
     player.meat.decayV += 0.001;
    
 };
+abc ++;
+if(abc > 4000) {
+    if(universalDistance <300) {
+    playSound("./giraffedog.wav");
+    abc = 0;
+    };
+};
  }, 1);
 
 //RENDER
@@ -1746,7 +1804,7 @@ for(let i = 0; i < text.length; i++) {
     let ty = t.ty;
 
     let centeredx = (canvas.width - (ctx.measureText(t.text).width)) / 2;
-    let centeredy = (canvas.height - (ctx.measureText(t.text).height)) / 2;
+    let centeredy = (canvas.height - 40) / 2;
 if(typeof t.ff === "function") {
     t.ff();
 };
@@ -1801,6 +1859,8 @@ if(keys["ArrowUp"]) {
 
 r();
 
+
+load();
 
 
     </script>
