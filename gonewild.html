@@ -97,6 +97,7 @@ this.state = "s";
         }, onClick() {
             if(player.equipped === "gun" && cmbd === 0 &&player.inventory[1] > 0) {
                 this.visible = false;
+                deers --;
                 this.ff = () => {};
                 newMeat(this.orgX,this.orgY,this.orgZ);
                 this.orgX = -110000000;
@@ -1399,7 +1400,6 @@ let text = [
         }},
         {ty: "ca", x: 0, y: 0, f: "40px Comic Sans MS", visible: false, text: "YOU DIED", cd: 0,c: "white", ff() {
             if(dead === true) {
-                console.log(this)
                 this.visible = true;
                 this.cd ++;
                 if(this.cd >150) {
